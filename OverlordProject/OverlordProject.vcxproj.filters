@@ -11,6 +11,8 @@
     <ClCompile Include="Prefabs\CubePrefab.cpp" />
     <ClCompile Include="Scenes\Week 4\UberMaterialScene.cpp" />
     <ClCompile Include="Materials\UberMaterial\UberMaterial.cpp" />
+    <ClCompile Include="Materials\SpikyMaterial\SpikyMaterial.cpp" />
+    <ClCompile Include="Scenes\Week 4\SpikyScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -22,5 +24,7 @@
     <ClInclude Include="Prefabs\CubePrefab.h" />
     <ClInclude Include="Scenes\Week 4\UberMaterialScene.h" />
     <ClInclude Include="Materials\UberMaterial\UberMaterial.h" />
+    <ClInclude Include="Materials\SpikyMaterial\SpikyMaterial.h" />
+    <ClInclude Include="Scenes\Week 4\SpikyScene.h" />
   </ItemGroup>
 </Project>

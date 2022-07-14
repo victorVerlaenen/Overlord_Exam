@@ -44,7 +44,7 @@ SpriteRenderer::~SpriteRenderer()
 	m_Textures.clear();
 }
 
-void SpriteRenderer::UpdateBuffer(const SceneContext& /*sceneContext*/)
+void SpriteRenderer::UpdateBuffer(const SceneContext& sceneContext)
 {
 	TODO_W4(L"Complete UpdateBuffer")
 
@@ -52,12 +52,20 @@ void SpriteRenderer::UpdateBuffer(const SceneContext& /*sceneContext*/)
 	{
 		// if the vertex buffer does not exists, or the number of sprites is bigger then the buffer size
 		//		release the buffer
+		SafeRelease(m_pVertexBuffer);
 		//		update the buffer size (if needed)
+		UINT size = static_cast<UINT>(m_Sprites.size());
+		m_BufferSize = size;
 		//		Create a new buffer. Make sure the Usage flag is set to Dynamic, bound as vertex buffer
 		//		and set the cpu access flags to access_write
-		//
+		D3D11_BUFFER_DESC vertexBuffDesc;
+		vertexBuffDesc.BindFlags = D3D10_BIND_FLAG::D3D10_BIND_VERTEX_BUFFER;
+		vertexBuffDesc.ByteWidth = sizeof(TrianglePosNormCol) * m_BufferSize;
+		vertexBuffDesc.CPUAccessFlags = D3D10_CPU_ACCESS_FLAG::D3D10_CPU_ACCESS_WRITE;
+		vertexBuffDesc.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
+		vertexBuffDesc.MiscFlags = 0;
 		//		Finally create the buffer (sceneContext.d3dContext.pDevice). Be sure to log the HResult! (HANDLE_ERROR)
-
+		sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, NULL, &m_pVertexBuffer);
 
 		ASSERT_NULL_(m_pVertexBuffer);
 	}
@@ -87,9 +95,13 @@ void SpriteRenderer::UpdateBuffer(const SceneContext& /*sceneContext*/)
 	if (m_pVertexBuffer)
 	{
 		// Finally fill the  buffer. You will need to create a D3D11_MAPPED_SUBRESOURCE
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
 		// Next you will need to use the device context to map the vertex buffer to the mapped resource
+		sceneContext.d3dContext.pDeviceContext->Map(m_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 		// use memcpy to copy all our sprite vertices (m_Sprites) to the mapped resource (D3D11_MAPPED_SUBRESOURCE::pData)
+		memcpy(mappedResource.pData, m_Sprites.data(), sizeof(VertexSprite) * m_BufferSize);
 		// unmap the vertex buffer
+		sceneContext.d3dContext.pDeviceContext->Unmap(m_pVertexBuffer, 0);
 	}
 }
 

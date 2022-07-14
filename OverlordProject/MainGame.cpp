@@ -3,8 +3,8 @@
 
 /*LAB Content*/
 //#define W3
-#define W4
-//#define W5
+//#define W4
+#define W5
 //#define W6
 //#define W7
 //#define W8
@@ -27,12 +27,12 @@
 //#include "Scenes/Week 4/ModelTestScene.h"
 #include "Scenes/Week 4/UberMaterialScene.h"
 #include "Scenes/Week 4/SpikyScene.h"
-//#include "Scenes/Week 4/SpriteTestScene.h"
+#include "Scenes/Week 4/SpriteTestScene.h"
 #endif
 
 #ifdef W5
 #include "Scenes/Week 5/FontTestScene.h"
-#include "Scenes/Week 5/CharacterScene.h"
+//#include "Scenes/Week 5/CharacterScene.h"
 #include "Scenes/Week 5/PickingScene.h"
 #endif
 
@@ -106,13 +106,13 @@ void MainGame::Initialize()
 	//SceneManager::Get()->AddGameScene(new ModelTestScene());
 	SceneManager::Get()->AddGameScene(new UberMaterialScene());
 	SceneManager::Get()->AddGameScene(new SpikyScene());
-	//SceneManager::Get()->AddGameScene(new SpriteTestScene());
+	SceneManager::Get()->AddGameScene(new SpriteTestScene());
 #endif
 
 #ifdef W5
 	SceneManager::Get()->AddGameScene(new FontTestScene());
 	SceneManager::Get()->AddGameScene(new PickingScene());
-	SceneManager::Get()->AddGameScene(new CharacterScene());
+	//SceneManager::Get()->AddGameScene(new CharacterScene());
 #endif
 
 #ifdef W6

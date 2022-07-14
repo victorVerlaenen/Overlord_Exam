@@ -63,8 +63,43 @@ void CameraComponent::SetActive(bool active)
 	pScene->SetActiveCamera(active?this:nullptr); //Switch to default camera if active==false
 }
 
-GameObject* CameraComponent::Pick(CollisionGroup /*ignoreGroups*/) const
+GameObject* CameraComponent::Pick(CollisionGroup ignoreGroups) const
 {
-	TODO_W5(L"Implement Picking Logic")
+	//TODO_W5(L"Implement Picking Logic")
+	auto sceneContext = m_pScene->GetSceneContext();
+	auto mousePosition = sceneContext.pInput->GetMousePosition();
+	float halfWidth = sceneContext.windowWidth / 2;
+	float halfHeight = sceneContext.windowHeight / 2;
+
+	//Convert mouse coordinates to NDC coordinates
+	float xNdc = (mousePosition.x - halfWidth) / halfWidth;
+	float yNdc = (halfHeight - mousePosition.y) / halfHeight;
+
+	//Calculate near point and far point
+	XMMATRIX viewProjectionInverse = XMLoadFloat4x4(&m_ViewProjectionInverse);
+
+	XMFLOAT3 vectorNear{ xNdc, yNdc, 0 };
+	XMFLOAT3 vectorFar{ xNdc, yNdc, 1 };
+	XMVECTOR nearPoint{ XMVector3TransformCoord(XMLoadFloat3(&vectorNear),viewProjectionInverse) };
+	XMVECTOR farPoint{ XMVector3TransformCoord(XMLoadFloat3(&vectorFar),viewProjectionInverse) };
+
+	XMFLOAT3 startFloat{};
+	XMFLOAT3 DirectionFloat{};
+	XMStoreFloat3(&startFloat, nearPoint);
+	XMStoreFloat3(&DirectionFloat, farPoint - nearPoint);
+	PxVec3 rayStart{ startFloat.x, startFloat.y, startFloat.z };
+	PxVec3 rayDirection{ DirectionFloat.x, DirectionFloat.y, DirectionFloat.z };
+	rayDirection.normalize();
+
+	//Raycast
+	PxQueryFilterData filterData{};
+	filterData.data.word0 = ~UINT(ignoreGroups);
+
+	PxRaycastBuffer hit{};
+	if (m_pScene->GetPhysxProxy()->Raycast(rayStart, rayDirection, PX_MAX_F32, hit, PxHitFlag::eDEFAULT, filterData))
+	{
+		return reinterpret_cast<BaseComponent*>(hit.block.actor->userData)->GetGameObject();
+	}
+
 	return nullptr;
 }

@@ -1,16 +1,27 @@
 #include "stdafx.h"
 #include "ControllerComponent.h"
 
-ControllerComponent::ControllerComponent(const PxCapsuleControllerDesc& controllerDesc):
+ControllerComponent::ControllerComponent(const PxCapsuleControllerDesc& controllerDesc) :
 	m_ControllerDesc{ controllerDesc }
 {
 }
 
 void ControllerComponent::Initialize(const SceneContext& /*sceneContext*/)
 {
-	if(!m_IsInitialized)
+	if (!m_IsInitialized)
 	{
-		TODO_W5(L"Complete the ControllerComponent Intialization")
+		//TODO_W5(L"Complete the ControllerComponent Intialization")
+		m_ControllerDesc.position = PxExtendedVec3(GetTransform()->GetPosition().x, GetTransform()->GetPosition().y, GetTransform()->GetPosition().z);
+		m_ControllerDesc.userData = this;
+
+		PxControllerManager* pControllerManager = GetScene()->GetPhysxProxy()->GetControllerManager();
+		m_pController = pControllerManager->createController(m_ControllerDesc);
+		ASSERT_NULL_(m_pController);
+
+		m_pController->getActor()->userData = this;
+
+		SetCollisionGroup(static_cast<CollisionGroup>(m_CollisionGroups.word0));
+		SetCollisionIgnoreGroup(static_cast<CollisionGroup>(m_CollisionGroups.word1));
 	}
 }
 

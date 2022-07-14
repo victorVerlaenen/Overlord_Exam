@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Prefabs\Character.cpp" />
     <ClCompile Include="Prefabs\CubePrefab.cpp" />
     <ClCompile Include="Prefabs\SpherePrefab.cpp" />
     <ClCompile Include="Prefabs\TorusPrefab.cpp" />
@@ -101,6 +102,7 @@
     <ClCompile Include="Materials\SpikyMaterial\SpikyMaterial.cpp" />
     <ClCompile Include="Scenes\Week 4\SpikyScene.cpp" />
     <ClCompile Include="Scenes\Week 4\SpriteTestScene.cpp" />
+    <ClCompile Include="Scenes\Week 5\CharacterScene.cpp" />
     <ClCompile Include="Scenes\Week 5\FontTestScene.cpp" />
     <ClCompile Include="Scenes\Week 5\PickingScene.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -127,6 +129,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prefabs\Character.h" />
     <ClInclude Include="Prefabs\CubePrefab.h" />
     <ClInclude Include="Prefabs\SpherePrefab.h" />
     <ClInclude Include="Prefabs\TorusPrefab.h" />
@@ -135,6 +138,7 @@
     <ClInclude Include="Materials\SpikyMaterial\SpikyMaterial.h" />
     <ClInclude Include="Scenes\Week 4\SpikyScene.h" />
     <ClInclude Include="Scenes\Week 4\SpriteTestScene.h" />
+    <ClInclude Include="Scenes\Week 5\CharacterScene.h" />
     <ClInclude Include="Scenes\Week 5\FontTestScene.h" />
     <ClInclude Include="Scenes\Week 5\PickingScene.h" />
     <ClInclude Include="stdafx.h" />

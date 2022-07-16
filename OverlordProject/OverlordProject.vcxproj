@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Prefabs\BoneObject.cpp" />
     <ClCompile Include="Prefabs\Character.cpp" />
     <ClCompile Include="Prefabs\CubePrefab.cpp" />
     <ClCompile Include="Prefabs\SpherePrefab.cpp" />
@@ -105,6 +106,9 @@
     <ClCompile Include="Scenes\Week 5\CharacterScene.cpp" />
     <ClCompile Include="Scenes\Week 5\FontTestScene.cpp" />
     <ClCompile Include="Scenes\Week 5\PickingScene.cpp" />
+    <ClCompile Include="Scenes\Week 6\SoftwareSkinningScene_1.cpp" />
+    <ClCompile Include="Scenes\Week 6\SoftwareSkinningScene_2.cpp" />
+    <ClCompile Include="Scenes\Week 6\SoftwareSkinningScene_3.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
@@ -129,6 +133,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prefabs\BoneObject.h" />
     <ClInclude Include="Prefabs\Character.h" />
     <ClInclude Include="Prefabs\CubePrefab.h" />
     <ClInclude Include="Prefabs\SpherePrefab.h" />
@@ -141,6 +146,9 @@
     <ClInclude Include="Scenes\Week 5\CharacterScene.h" />
     <ClInclude Include="Scenes\Week 5\FontTestScene.h" />
     <ClInclude Include="Scenes\Week 5\PickingScene.h" />
+    <ClInclude Include="Scenes\Week 6\SoftwareSkinningScene_1.h" />
+    <ClInclude Include="Scenes\Week 6\SoftwareSkinningScene_2.h" />
+    <ClInclude Include="Scenes\Week 6\SoftwareSkinningScene_3.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="Scenes\Week 4\UberMaterialScene.h" />

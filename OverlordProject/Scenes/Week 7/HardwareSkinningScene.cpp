@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "HardwareSkinningScene.h"
 
-#include "Materials/DiffuseMaterial_Skinned.h"
+#include "Materials/DiffuseMaterial_Skinned/DiffuseMaterial_Skinned.h"
 
 HardwareSkinningScene::~HardwareSkinningScene()
 {
@@ -9,7 +9,6 @@ HardwareSkinningScene::~HardwareSkinningScene()
 	{
 		delete[] m_ClipNames[i];
 	}
-
 	delete[] m_ClipNames;
 }
 
@@ -36,9 +35,8 @@ void HardwareSkinningScene::Initialize()
 	for (UINT i{ 0 }; i < m_ClipCount; ++i)
 	{
 		auto clipName = StringUtil::utf8_encode(pAnimator->GetClip(static_cast<int>(i)).name);
-		const auto clipSize = clipName.size();
-		m_ClipNames[i] = new char[clipSize + 1];
-		strncpy_s(m_ClipNames[i], clipSize + 1, clipName.c_str(), clipSize);
+		m_ClipNames[i] = new char[clipName.size() + 1];
+		strncpy_s(m_ClipNames[i], clipName.size() + 1, clipName.c_str(), clipName.size());
 	}
 }
 
@@ -63,7 +61,7 @@ void HardwareSkinningScene::OnGUI()
 		pAnimator->SetPlayReversed(reversed);
 	}
 
-	if (ImGui::ListBox("Animation Clip", &m_AnimationClipId, m_ClipNames, static_cast<int>(m_ClipCount)))
+	if (ImGui::ListBox("Animation Clip", &m_AnimationClipId, m_ClipNames, m_ClipCount))
 	{
 		pAnimator->SetAnimation(m_AnimationClipId);
 	}

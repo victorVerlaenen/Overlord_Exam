@@ -24,6 +24,14 @@
     <ClCompile Include="Scenes\Week 6\SoftwareSkinningScene_3.cpp" />
     <ClCompile Include="Scenes\Week 7\HardwareSkinningScene.cpp" />
     <ClCompile Include="Materials\DiffuseMaterial_Skinned\DiffuseMaterial_Skinned.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
+    <ClCompile Include="Scenes\Week 8\ShadowMappingScene.cpp" />
+    <ClCompile Include="Scenes\Week 9\ParticleScene.cpp" />
+    <ClCompile Include="Materials\Post\PostGrayscale.cpp" />
+    <ClCompile Include="Scenes\Week 10\PostProcessingScene.cpp" />
+    <ClCompile Include="Materials\DiffuseMaterial\DiffuseMaterial.cpp" />
+    <ClCompile Include="Materials\Post\PostBlur.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -48,5 +56,13 @@
     <ClInclude Include="Scenes\Week 6\SoftwareSkinningScene_3.h" />
     <ClInclude Include="Scenes\Week 7\HardwareSkinningScene.h" />
     <ClInclude Include="Materials\DiffuseMaterial_Skinned\DiffuseMaterial_Skinned.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
+    <ClInclude Include="Scenes\Week 8\ShadowMappingScene.h" />
+    <ClInclude Include="Scenes\Week 9\ParticleScene.h" />
+    <ClInclude Include="Materials\Post\PostGrayscale.h" />
+    <ClInclude Include="Scenes\Week 10\PostProcessingScene.h" />
+    <ClInclude Include="Materials\DiffuseMaterial\DiffuseMaterial.h" />
+    <ClInclude Include="Materials\Post\PostBlur.h" />
   </ItemGroup>
 </Project>

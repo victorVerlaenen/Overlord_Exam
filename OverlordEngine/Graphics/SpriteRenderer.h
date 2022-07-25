@@ -9,7 +9,7 @@ public:
 
 	void Draw(const SceneContext& sceneContext);
 
-	void DrawImmediate(const D3D11Context& d3dContext, ID3D11ShaderResourceView* pSrv, const XMFLOAT2& position, const XMFLOAT4& color = XMFLOAT4{ Colors::White }, const XMFLOAT2& pivot = XMFLOAT2{ 0.f, 0.f }, const XMFLOAT2& scale = XMFLOAT2{ 1.f, 1.f }, float rotation = 0.f);
+	void DrawImmediate(const D3D11Context& d3dContext, ID3D11ShaderResourceView* pSrv, const XMFLOAT2& position, const XMFLOAT4& color = XMFLOAT4{ Colors::White }, const XMFLOAT2& pivot = XMFLOAT2{ 0.f, 0.f }, const XMFLOAT2& scale = XMFLOAT2{ 1.f, 1.f }, float rotation = 0.f, UINT layer = 0);
 
 	void AppendSprite(TextureData* pTexture, const XMFLOAT2& position, const XMFLOAT4& color = XMFLOAT4{ Colors::White }, const XMFLOAT2& pivot = XMFLOAT2{ 0, 0 }, const XMFLOAT2& scale = XMFLOAT2{ 1, 1 }, float rotation = 0.f, float depth = 0.f);
 

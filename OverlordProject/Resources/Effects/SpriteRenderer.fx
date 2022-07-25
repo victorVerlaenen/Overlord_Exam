@@ -21,11 +21,21 @@ BlendState EnableBlending
 DepthStencilState NoDepth
 {
     DepthEnable = FALSE;
+}; 
+
+DepthStencilState DepthState
+{
+    DepthFunc = LESS_EQUAL;
 };
 
 RasterizerState BackCulling
 {
     CullMode = BACK;
+}; 
+
+RasterizerState NoCulling
+{
+    CullMode = NONE;
 };
 
 //SHADER STRUCTS
@@ -36,6 +46,7 @@ struct VS_DATA
     float4 TransformData : POSITION; //PosX, PosY, Depth (PosZ), Rotation
     float4 TransformData2 : POSITION1; //PivotX, PivotY, ScaleX, ScaleY
     float4 Color : COLOR;
+    uint Layer : LAYER;
 };
 
 struct GS_DATA
@@ -54,7 +65,7 @@ VS_DATA MainVS(VS_DATA input)
 
 //GEOMETRY SHADER
 //***************
-void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float4 col, float2 texCoord, float rotation, float2 rotCosSin, float2 offset, float2 pivotOffset)
+void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float4 col, float2 texCoord, float rotation, float2 rotCosSin, float2 offset, float2 pivotOffset, uint layer)
 {
     if (rotation != 0)
     {
@@ -76,7 +87,14 @@ void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float4 co
 
 	//Geometry Vertex Output
     GS_DATA geomData = (GS_DATA) 0;
-    geomData.Position = mul(float4(pos, 1.0f), gTransform);
+    if (layer == 1)
+    {
+        geomData.Position = mul(float4(pos, 1.0f), gTransform).xyww;
+    }
+    else
+    {
+        geomData.Position = mul(float4(pos, 1.0f), gTransform);
+    }
     geomData.Color = col;
     geomData.TexCoord = texCoord;
     triStream.Append(geomData);
@@ -86,6 +104,8 @@ void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float4 co
 void MainGS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 {
 	//Given Data (Vertex Data)
+    uint layer = vertex[0].Layer;
+
     float3 position = float3(0, 0, 0); //Extract the position data from the VS_DATA vertex struct
 	position.x = vertex[0].TransformData.x;
 	position.y = vertex[0].TransformData.y;
@@ -127,26 +147,25 @@ void MainGS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 	float2 pivotOffset = float2(0, 0);
 	//VERTEX 1 [LT]
 	pivotOffset = (texCoord - pivot) * scaledSize;
-    CreateVertex(triStream, position, float4(1, 1, 1, 1), texCoord, rotation, rotCosSin, offset, pivotOffset); //Change the color data too!
+    CreateVertex(triStream, position, float4(1, 1, 1, 1), texCoord, rotation, rotCosSin, offset, pivotOffset, layer); //Change the color data too!
 
 	//VERTEX 2 [RT]
 	pivotOffset = (float2(1, 0) - pivot) * scaledSize;
-    CreateVertex(triStream, position, float4(1, 1, 1, 1), float2(1, 0), rotation, rotCosSin, offset, pivotOffset); //Change the color data too!
+    CreateVertex(triStream, position, float4(1, 1, 1, 1), float2(1, 0), rotation, rotCosSin, offset, pivotOffset, layer); //Change the color data too!
 
 	//VERTEX 3 [LB]
 	pivotOffset = (float2(0, 1) - pivot) * scaledSize;
-    CreateVertex(triStream, position, float4(1, 1, 1, 1), float2(0, 1), rotation, rotCosSin, offset, pivotOffset); //Change the color data too!
+    CreateVertex(triStream, position, float4(1, 1, 1, 1), float2(0, 1), rotation, rotCosSin, offset, pivotOffset, layer); //Change the color data too!
 
 	//VERTEX 4 [RB]
 	pivotOffset = (float2(1, 1) - pivot) * scaledSize;
-    CreateVertex(triStream, position, float4(1, 1, 1, 1), float2(1, 1), rotation, rotCosSin, offset, pivotOffset); //Change the color data too!
+    CreateVertex(triStream, position, float4(1, 1, 1, 1), float2(1, 1), rotation, rotCosSin, offset, pivotOffset, layer); //Change the color data too!
 }
 
 //PIXEL SHADER
 //************
 float4 MainPS(GS_DATA input) : SV_TARGET
 {
-
     return gSpriteTexture.Sample(samPoint, input.TexCoord) * input.Color;
 }
 
@@ -157,7 +176,15 @@ technique11 Default
     {
         SetRasterizerState(BackCulling);
         SetBlendState(EnableBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
-		//SetDepthStencilState(NoDepth,0);
+        SetVertexShader(CompileShader(vs_4_0, MainVS()));
+        SetGeometryShader(CompileShader(gs_4_0, MainGS()));
+        SetPixelShader(CompileShader(ps_4_0, MainPS()));
+    }
+    pass p1
+    {
+        SetRasterizerState(NoCulling);
+        SetBlendState(EnableBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
+        SetDepthStencilState(DepthState,0);
         SetVertexShader(CompileShader(vs_4_0, MainVS()));
         SetGeometryShader(CompileShader(gs_4_0, MainGS()));
         SetPixelShader(CompileShader(ps_4_0, MainPS()));

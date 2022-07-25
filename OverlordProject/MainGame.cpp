@@ -9,12 +9,14 @@
 //#define W7
 //#define W8
 //#define W9
-#define W10
+//#define W10
 
 /*MILESTONE Content*/
 //#define MILESTONE_1
 //#define MILESTONE_2
 //#define MILESTONE_3
+
+#define PYRE
 
 #pragma region Lab/Milestone Includes
 #ifdef W3
@@ -79,6 +81,10 @@
 #include "Scenes/Week 8/ShadowMappingScene.h"
 #include "Scenes/Week 9/ParticleScene.h"
 #include "Scenes/Week 10/PostProcessingScene.h"
+#endif
+
+#ifdef PYRE
+#include "Scenes/Pyre/MenuScene.h"
 #endif
 #pragma endregion
 
@@ -157,6 +163,10 @@ void MainGame::Initialize()
 	SceneManager::Get()->AddGameScene(new ShadowMappingScene());
 	SceneManager::Get()->AddGameScene(new ParticleScene());
 	SceneManager::Get()->AddGameScene(new PostProcessingScene());
+#endif
+
+#ifdef PYRE
+	SceneManager::Get()->AddGameScene(new MenuScene());
 #endif
 }
 

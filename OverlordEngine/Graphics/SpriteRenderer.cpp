@@ -183,7 +183,7 @@ void SpriteRenderer::AppendSprite(TextureData* pTexture, const XMFLOAT2& positio
 	m_Sprites.push_back(vertex);
 }
 
-void SpriteRenderer::DrawImmediate(const D3D11Context& d3dContext, ID3D11ShaderResourceView* pSrv, const XMFLOAT2& position, const XMFLOAT4& color, const XMFLOAT2& pivot, const XMFLOAT2& scale, float rotation)
+void SpriteRenderer::DrawImmediate(const D3D11Context& d3dContext, ID3D11ShaderResourceView* pSrv, const XMFLOAT2& position, const XMFLOAT4& color, const XMFLOAT2& pivot, const XMFLOAT2& scale, float rotation, UINT layer)
 {
 	//Create Immediate VB
 	if (!m_pImmediateVertexBuffer)
@@ -205,6 +205,7 @@ void SpriteRenderer::DrawImmediate(const D3D11Context& d3dContext, ID3D11ShaderR
 	vertex.TransformData = XMFLOAT4(position.x, position.y, 0, rotation);
 	vertex.TransformData2 = XMFLOAT4(pivot.x, pivot.y, scale.x, scale.y);
 	vertex.Color = color;
+	vertex.Layer = layer;
 
 	if (m_pImmediateVertexBuffer && !m_ImmediateVertex.Equals(vertex))
 	{
@@ -243,9 +244,9 @@ void SpriteRenderer::DrawImmediate(const D3D11Context& d3dContext, ID3D11ShaderR
 
 	D3DX11_TECHNIQUE_DESC techDesc{};
 	m_pTechnique->GetDesc(&techDesc);
-	for (unsigned int i = 0; i < techDesc.Passes; ++i)
-	{
-		m_pTechnique->GetPassByIndex(i)->Apply(0, d3dContext.pDeviceContext);
+	//for (unsigned int i = 0; i < techDesc.Passes; ++i)
+	//{
+		m_pTechnique->GetPassByIndex(layer)->Apply(0, d3dContext.pDeviceContext);
 		d3dContext.pDeviceContext->Draw(1, 0);
-	}
+	//}
 }

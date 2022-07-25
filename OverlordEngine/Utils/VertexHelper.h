@@ -100,6 +100,7 @@ struct VertexSprite
 	XMFLOAT4 TransformData;
 	XMFLOAT4 TransformData2;
 	XMFLOAT4 Color;
+	UINT Layer;
 
 	bool Equals(const VertexSprite& source) const
 	{
@@ -107,6 +108,7 @@ struct VertexSprite
 		if (!MathHelper::XMFloat4Equals(source.TransformData, TransformData))return false;
 		if (!MathHelper::XMFloat4Equals(source.TransformData2, TransformData2))return false;
 		if (!MathHelper::XMFloat4Equals(source.Color, Color))return false;
+		if (source.Layer != Layer)return false;
 
 		return true;
 	}

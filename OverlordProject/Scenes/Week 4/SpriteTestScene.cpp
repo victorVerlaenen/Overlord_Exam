@@ -11,7 +11,7 @@ void SpriteTestScene::Initialize()
 	m_pSprite->AddComponent(new SpriteComponent(L"Textures/TestSprite.jpg", { 0.5f,0.5f }, { 1.f,1.f,1.f,.5f }));
 	AddChild(m_pSprite);
 
-	m_pSprite->GetTransform()->Translate(m_SceneContext.windowWidth / 2.f, m_SceneContext.windowHeight / 2.f, .9f);
+	m_pSprite->GetTransform()->Translate(m_SceneContext.windowWidth / 2.f, m_SceneContext.windowHeight / 2.f, 0.f);
 	m_pSprite->GetTransform()->Scale(1.f, 1.f, 1.f);
 }
 

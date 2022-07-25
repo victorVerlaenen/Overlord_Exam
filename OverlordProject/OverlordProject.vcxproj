@@ -99,6 +99,7 @@
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
     <ClCompile Include="Materials\Post\PostBlur.cpp" />
+    <ClCompile Include="Scenes\Pyre\MenuScene.cpp" />
     <ClCompile Include="Prefabs\BoneObject.cpp" />
     <ClCompile Include="Prefabs\Character.cpp" />
     <ClCompile Include="Prefabs\CubePrefab.cpp" />
@@ -149,6 +150,7 @@
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
     <ClInclude Include="Materials\Post\PostBlur.h" />
+    <ClInclude Include="Scenes\Pyre\MenuScene.h" />
     <ClInclude Include="Prefabs\BoneObject.h" />
     <ClInclude Include="Prefabs\Character.h" />
     <ClInclude Include="Prefabs\CubePrefab.h" />

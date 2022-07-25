@@ -32,6 +32,7 @@
     <ClCompile Include="Scenes\Week 10\PostProcessingScene.cpp" />
     <ClCompile Include="Materials\DiffuseMaterial\DiffuseMaterial.cpp" />
     <ClCompile Include="Materials\Post\PostBlur.cpp" />
+    <ClCompile Include="Scenes\Pyre\MenuScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -64,5 +65,6 @@
     <ClInclude Include="Scenes\Week 10\PostProcessingScene.h" />
     <ClInclude Include="Materials\DiffuseMaterial\DiffuseMaterial.h" />
     <ClInclude Include="Materials\Post\PostBlur.h" />
+    <ClInclude Include="Scenes\Pyre\MenuScene.h" />
   </ItemGroup>
 </Project>

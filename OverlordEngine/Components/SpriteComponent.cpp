@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "SpriteComponent.h"
 
-SpriteComponent::SpriteComponent(const std::wstring& spriteAsset, const XMFLOAT2& pivot, const XMFLOAT4& color) :
+SpriteComponent::SpriteComponent(const std::wstring& spriteAsset, const XMFLOAT2& pivot, const XMFLOAT4& color, UINT layer) :
 	m_SpriteAsset(spriteAsset),
 	m_Pivot(pivot),
-	m_Color(color)
+	m_Color(color),
+	m_Layer(layer)
 {}
 
 void SpriteComponent::Initialize(const SceneContext& /*sceneContext*/)
@@ -34,5 +35,5 @@ void SpriteComponent::Draw(const SceneContext& sceneContext)
 	// The sprite renderer is a singleton
 	// you will need to position (X&Y should be in screenspace, Z contains the depth between [0,1]), the rotation and the scale from the owning GameObject
 	// You can use the MathHelper::QuaternionToEuler function to help you with the z rotation 
-	SpriteRenderer::Get()->DrawImmediate(sceneContext.d3dContext, m_pTexture->GetShaderResourceView(), position, GetColor(), GetPivot(), scale, rotationEuler);
+	SpriteRenderer::Get()->DrawImmediate(sceneContext.d3dContext, m_pTexture->GetShaderResourceView(), position, GetColor(), GetPivot(), scale, rotationEuler, m_Layer);
 }

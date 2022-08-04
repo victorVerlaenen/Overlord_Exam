@@ -15,13 +15,13 @@ void UberMaterialScene::Initialize()
 
 	m_pSphere = AddChild(new GameObject());
 	m_pSphere->GetTransform()->Scale(15);
-	const auto pModelComponent = new ModelComponent(L"Meshes/Sphere.ovm");
+	const auto pModelComponent = new ModelComponent(L"Meshes/Orb.ovm");
 
 	m_pUberMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	m_pUberMaterial->SetDiffuseTexture(L"Textures/Skulls_Diffusemap.tga");
-	m_pUberMaterial->SetNormalTexture(L"Textures/Skulls_Normalmap.tga");
-	m_pUberMaterial->SetSpecularTexture(L"Textures/Skulls_Heightmap.tga");
-	m_pUberMaterial->SetEnvironmentTexture(L"Textures/Sunol_Cubemap.dds");
+	m_pUberMaterial->SetDiffuseTexture(L"Textures/Orb/Orb_albedo.jpg");
+	m_pUberMaterial->SetNormalTexture(L"Textures/Orb/Orb_normal.png");
+	m_pUberMaterial->SetSpecularTexture(L"Textures/Orb/Orb_roughness.jpg");
+	m_pUberMaterial->SetEnvironmentTexture(L"Textures/Skybox.dds");
 
 	pModelComponent->SetMaterial(m_pUberMaterial);
 	m_pSphere->AddComponent(pModelComponent);

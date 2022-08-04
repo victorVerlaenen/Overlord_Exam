@@ -33,6 +33,16 @@
     <ClCompile Include="Materials\DiffuseMaterial\DiffuseMaterial.cpp" />
     <ClCompile Include="Materials\Post\PostBlur.cpp" />
     <ClCompile Include="Scenes\Pyre\MenuScene.cpp" />
+    <ClCompile Include="Scenes\Pyre\PyreScene.cpp" />
+    <ClCompile Include="Materials\Skybox\SkyboxMaterial.cpp" />
+    <ClCompile Include="Prefabs\Skybox.cpp" />
+    <ClCompile Include="Prefabs\Button\Button.cpp" />
+    <ClCompile Include="Materials\Shadow\ColorMaterial_Shadow.cpp" />
+    <ClCompile Include="Prefabs\Player\Player.cpp" />
+    <ClCompile Include="Prefabs\Orb\Orb.cpp" />
+    <ClCompile Include="Prefabs\Pedestal\Pedestal.cpp" />
+    <ClCompile Include="Prefabs\CharacterHUD\CharacterHUD.cpp" />
+    <ClCompile Include="Prefabs\Team\Team.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -66,5 +76,15 @@
     <ClInclude Include="Materials\DiffuseMaterial\DiffuseMaterial.h" />
     <ClInclude Include="Materials\Post\PostBlur.h" />
     <ClInclude Include="Scenes\Pyre\MenuScene.h" />
+    <ClInclude Include="Scenes\Pyre\PyreScene.h" />
+    <ClInclude Include="Materials\Skybox\SkyboxMaterial.h" />
+    <ClInclude Include="Prefabs\Skybox.h" />
+    <ClInclude Include="Prefabs\Button\Button.h" />
+    <ClInclude Include="Materials\Shadow\ColorMaterial_Shadow.h" />
+    <ClInclude Include="Prefabs\Player\Player.h" />
+    <ClInclude Include="Prefabs\Orb\Orb.h" />
+    <ClInclude Include="Prefabs\Pedestal\Pedestal.h" />
+    <ClInclude Include="Prefabs\CharacterHUD\CharacterHUD.h" />
+    <ClInclude Include="Prefabs\Team\Team.h" />
   </ItemGroup>
 </Project>

@@ -17,6 +17,8 @@ public:
 	GameScene* GetScene() const { return m_pScene; }
 	TransformComponent* GetTransform() const;
 	UINT GetComponentId() const { return m_ComponentId; }
+	void SetIsOnBackground(bool value) { m_IsOnBackground = value; }
+	bool GetIsOnBackground() const { return m_IsOnBackground; }
 
 protected:
 
@@ -48,6 +50,8 @@ private:
 	void RootOnSceneDetach(GameScene*);
 
 	static UINT m_ComponentCounter;
+
+	bool m_IsOnBackground{false};
 };
 
 

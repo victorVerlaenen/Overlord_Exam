@@ -17,10 +17,10 @@ void HardwareSkinningScene::Initialize()
 	m_SceneContext.settings.enableOnGUI = true;
 
 	const auto pSkinnedMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Skinned>();
-	pSkinnedMaterial->SetDiffuseTexture(L"Textures/PeasantGirl_Diffuse.png");
+	pSkinnedMaterial->SetDiffuseTexture(L"Textures/Mouse_albedo.jpeg");
 
 	const auto pObject = AddChild(new GameObject);
-	const auto pModel = pObject->AddComponent(new ModelComponent(L"Meshes/PeasantGirl.ovm"));
+	const auto pModel = pObject->AddComponent(new ModelComponent(L"Meshes/Mouse.ovm"));
 	pModel->SetMaterial(pSkinnedMaterial);
 
 	pObject->GetTransform()->Scale(0.15f);

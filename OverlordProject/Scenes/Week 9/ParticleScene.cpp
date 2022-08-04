@@ -10,7 +10,7 @@ void ParticleScene::Initialize()
 
 	//Particle System
 	ParticleEmitterSettings settings{};
-	settings.velocity = { 0.f,6.f,0.f };
+	/*settings.velocity = { 0.f,6.f,0.f };
 	settings.minSize = 1.f;
 	settings.maxSize = 2.f;
 	settings.minEnergy = 1.f;
@@ -19,10 +19,21 @@ void ParticleScene::Initialize()
 	settings.maxScale = 5.5f;
 	settings.minEmitterRadius = .2f;
 	settings.maxEmitterRadius = .5f;
-	settings.color = { 1.f,1.f,1.f, .6f };
+	settings.color = { 1.f,1.f,1.f, .6f };*/
+
+	settings.velocity = { 0.f,6.f,0.f };
+	settings.minSize = 5.f;
+	settings.maxSize = 6.f;
+	settings.minEnergy = 2.f;
+	settings.maxEnergy = 2.f;
+	settings.minScale = -5.f;
+	settings.maxScale = -6.0f;
+	settings.minEmitterRadius = .5f;
+	settings.maxEmitterRadius = .7f;
+	settings.color = { 0.9411764f,0.3607843f,0.0705882f, .6f };
 
 	const auto pObject = AddChild(new GameObject);
-	m_pEmitter = pObject->AddComponent(new ParticleEmitterComponent(L"Textures/Smoke.png", settings, 200));
+	m_pEmitter = pObject->AddComponent(new ParticleEmitterComponent(L"Textures/Fire.png", settings, 200));
 
 	//Teapot
 	m_pTeapot = AddChild(new GameObject());

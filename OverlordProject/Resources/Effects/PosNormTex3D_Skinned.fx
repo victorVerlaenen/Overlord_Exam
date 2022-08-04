@@ -88,7 +88,7 @@ float4 PS(VS_OUTPUT input) : SV_TARGET{
 	float3 color_rgb= diffuseColor.rgb;
 	float color_a = diffuseColor.a;
 	
-	//HalfLambert Diffuse :)
+	//HalfLambert Diffuse
 	float diffuseStrength = dot(input.normal, -gLightDirection);
 	diffuseStrength = diffuseStrength * 0.5 + 0.5;
 	diffuseStrength = saturate(diffuseStrength);

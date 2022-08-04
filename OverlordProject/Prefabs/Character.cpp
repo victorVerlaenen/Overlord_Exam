@@ -22,9 +22,10 @@ void Character::Initialize(const SceneContext& /*sceneContext*/)
 
 void Character::Update(const SceneContext& sceneContext)
 {
-	if (m_pCameraComponent->IsActive())
+	//if (m_pCameraComponent->IsActive())
+	if (true)
 	{
-		//constexpr float epsilon{ 0.01f }; //Constant that can be used to compare if a float is near zero
+		constexpr float epsilon{ 0.01f }; //Constant that can be used to compare if a float is near zero
 		bool isMoving{ false };
 
 		//***************
@@ -44,6 +45,11 @@ void Character::Update(const SceneContext& sceneContext)
 			move.y = -1;
 		}
 		//Optional: if move.y is near zero (abs(move.y) < epsilon), you could use the ThumbStickPosition.y for movement
+		if (std::abs(move.y) < epsilon)
+		{
+			isMoving = true;
+			move.y = sceneContext.pInput->GetThumbstickPosition().y;
+		}
 
 		//move.x should contain a 1 (Right) or -1 (Left) based on the active input (check corresponding actionId in m_CharacterDesc)
 		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_MoveRight))
@@ -57,6 +63,11 @@ void Character::Update(const SceneContext& sceneContext)
 			move.x = -1;
 		}
 		//Optional: if move.x is near zero (abs(move.x) < epsilon), you could use the Left ThumbStickPosition.x for movement
+		if (std::abs(move.x) < epsilon)
+		{
+			isMoving = true;
+			move.x = sceneContext.pInput->GetThumbstickPosition().x;
+		}
 
 		//## Input Gathering (look)
 		XMFLOAT2 look{ 0.f, 0.f }; //Uncomment

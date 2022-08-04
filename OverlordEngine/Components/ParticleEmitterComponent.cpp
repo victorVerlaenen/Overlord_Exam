@@ -66,7 +66,7 @@ void ParticleEmitterComponent::Update(const SceneContext& sceneContext)
 	const float elapsedTime = sceneContext.pGameTime->GetElapsed();
 
 	//1. Create a local variable, called particleInterval of type float.
-	float particleInterval = ((m_EmitterSettings.maxEnergy + m_EmitterSettings.minEnergy) / 2) / m_MaxParticles;
+	float particleInterval = ((m_EmitterSettings.maxEnergy + m_EmitterSettings.minEnergy) / m_MaxParticles);
 
 	//2. Increase m_LastParticleInit by the elapsed GameTime.
 	m_LastParticleSpawn += elapsedTime;
@@ -120,7 +120,7 @@ void ParticleEmitterComponent::UpdateParticle(Particle& p, float elapsedTime) co
 	//Subtract the elapsedTime from the particle’s currentEnergy
 	p.currentEnergy -= elapsedTime;
 	//If currentEnergy is smaller than ZERO, deactivate the particle and return
-	if (p.currentEnergy <= 0.f)
+	if (p.currentEnergy < 0.f)
 	{
 		p.isActive = false;
 		return;
@@ -134,10 +134,28 @@ void ParticleEmitterComponent::UpdateParticle(Particle& p, float elapsedTime) co
 	//life percent variable
 	const float lifePercent{ p.currentEnergy / p.totalEnergy };
 	//Color
-	p.vertexInfo.Color = { m_EmitterSettings.color.x, m_EmitterSettings.color.y,
-					m_EmitterSettings.color.z, lifePercent };
+	XMFLOAT4 white{ 1.f,1.f,1.f,1.f };
+	auto loadedWhite = XMLoadFloat4(&white);
+	auto inverseColorVec{ loadedWhite - XMLoadFloat4(&m_EmitterSettings.color) };
+	inverseColorVec *= std::clamp(p.totalEnergy - p.currentEnergy + 0.2f, 0.f, p.totalEnergy);
+	XMFLOAT4 color{};
+	XMStoreFloat4(&color, loadedWhite - inverseColorVec);
+	
+	//p.vertexInfo.Color = { m_EmitterSettings.color.x, m_EmitterSettings.color.y,
+					//m_EmitterSettings.color.z, lifePercent };
+	p.vertexInfo.Color = { color.x, color.y,
+					color.z, lifePercent };
+
+	p.vertexInfo.Color.w = lifePercent * 2.f;
 	//Size
-	p.vertexInfo.Size = (p.initialSize + p.sizeChange * (1.0f - lifePercent));
+	if (p.sizeChange < 1.0)
+	{
+		p.vertexInfo.Size = (p.initialSize + p.sizeChange * (1.0f - lifePercent));
+	}
+	else
+	{
+		p.vertexInfo.Size = (p.initialSize + p.sizeChange * lifePercent);
+	}
 }
 
 void ParticleEmitterComponent::SpawnParticle(Particle& p)
@@ -148,7 +166,7 @@ void ParticleEmitterComponent::SpawnParticle(Particle& p)
 
 	//Energy
 	p.totalEnergy = MathHelper::randF(m_EmitterSettings.minEnergy, m_EmitterSettings.maxEnergy);
-	p.currentEnergy = MathHelper::randF(m_EmitterSettings.minEnergy, m_EmitterSettings.maxEnergy);
+	p.currentEnergy = p.totalEnergy;
 
 	//Position
 	constexpr auto randomDirection = XMFLOAT3{ 1,0,0 };
@@ -161,8 +179,8 @@ void ParticleEmitterComponent::SpawnParticle(Particle& p)
 	XMStoreFloat3(&p.vertexInfo.Position, position + randomRotation * randomDistance);
 
 	//Size
-	p.initialSize = MathHelper::randF(m_EmitterSettings.minSize, m_EmitterSettings.maxSize);
 	p.vertexInfo.Size = MathHelper::randF(m_EmitterSettings.minSize, m_EmitterSettings.maxSize);
+	p.initialSize = p.vertexInfo.Size;
 	p.sizeChange = MathHelper::randF(m_EmitterSettings.minScale, m_EmitterSettings.maxScale);
 
 	//Rotation

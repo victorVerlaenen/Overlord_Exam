@@ -1,11 +1,12 @@
 #pragma once
+#include "Misc/TextureData.h"
 
 class TextureData;
 
 class SpriteComponent : public BaseComponent
 {
 public:
-	SpriteComponent(const std::wstring& spriteAsset, const XMFLOAT2& pivot = XMFLOAT2{ 0, 0 }, const XMFLOAT4& color = XMFLOAT4{ Colors::White }, UINT layer = 1);
+	SpriteComponent(const std::wstring& spriteAsset, const XMFLOAT2& pivot = XMFLOAT2{ 0, 0 }, const XMFLOAT4& color = XMFLOAT4{ Colors::White });
 	~SpriteComponent() override = default;
 	SpriteComponent(const SpriteComponent& other) = delete;
 	SpriteComponent(SpriteComponent&& other) noexcept = delete;
@@ -14,6 +15,7 @@ public:
 
 	const XMFLOAT2& GetPivot() const { return m_Pivot; }
 	const XMFLOAT4& GetColor() const { return m_Color; }
+	const XMFLOAT2& GetTextureDimension() const { return m_pTexture->GetDimension(); }
 
 	void SetPivot(const XMFLOAT2& pivot) { m_Pivot = pivot; }
 	void SetColor(const XMFLOAT4& color) { m_Color = color; }
@@ -28,5 +30,4 @@ private:
 	std::wstring m_SpriteAsset{};
 	XMFLOAT2 m_Pivot{};
 	XMFLOAT4 m_Color{};
-	UINT m_Layer{};
 };

@@ -40,7 +40,9 @@ RasterizerState NoCulling
 
 BlendState NoBlending
 {
-	BlendEnable[0] = FALSE;
+	BlendEnable[0] = TRUE;
+	SrcBlend = SRC_ALPHA;
+	DestBlend = INV_SRC_ALPHA;
 };
 
 //--------------------------------------------------------------------------------------

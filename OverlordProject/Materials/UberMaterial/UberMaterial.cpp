@@ -35,12 +35,12 @@ void UberMaterial::InitializeEffectVariables()
 	SetVariable_Scalar(L"gUseTextureDiffuse", true);
 	SetVariable_Scalar(L"gFlipGreenChannel", false);
 	SetVariable_Scalar(L"gUseTextureNormal", true);
-	SetVariable_Scalar(L"gUseEnvironmentMapping", false);
+	SetVariable_Scalar(L"gUseEnvironmentMapping", true);
 	SetVariable_Scalar(L"gUseTextureSpecularIntensity", true);
 	SetVariable_Scalar(L"gUseSpecularPhong", true);
-	SetVariable_Scalar(L"gReflectionStrength", 0.4f);
-	SetVariable_Scalar(L"gRefractionStrength", 0.2f);
-	SetVariable_Scalar(L"gRefractionIndex", 0.3f);
+	SetVariable_Scalar(L"gReflectionStrength", -1.f);
+	SetVariable_Scalar(L"gRefractionStrength", 4.2f);
+	SetVariable_Scalar(L"gRefractionIndex", .3f);
 	SetVariable_Scalar(L"gUseFresnelFalloff", true);
 	SetVariable_Scalar(L"gFresnelPower", 2.0f);
 	SetVariable_Scalar(L"gFresnelMultiplier", 1.5f);

@@ -1,4 +1,5 @@
 #pragma once
+class Button;
 class DiffuseMaterial_Shadow;
 
 class MenuScene final : public GameScene
@@ -19,7 +20,21 @@ protected:
 	void OnGUI() override;
 
 private:
+	enum InputIds
+	{
+		Select,
+	};
+
+	std::vector<Button*> m_pButtons{};
+
 	DiffuseMaterial_Shadow* m_pBookMaterial;
 	GameObject* m_pLeftPileOfBooks, * m_pRightPileOfBooks;
 	GameObject* m_pBackground;
+	GameObject* m_pSkyBox;
+	
+	bool m_Navigated{ false };
+	float m_NavigationTimer{ 0 };
+	const float m_NavigationCooldown{ 0.2f };
+
+	FMOD::Sound* m_pMenuTrack{};
 };

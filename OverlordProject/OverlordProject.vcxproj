@@ -93,12 +93,19 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Prefabs\CharacterHUD\CharacterHUD.cpp" />
+    <ClCompile Include="Materials\Shadow\ColorMaterial_Shadow.cpp" />
+    <ClCompile Include="Prefabs\Pedestal\Pedestal.cpp" />
+    <ClCompile Include="Prefabs\Orb\Orb.cpp" />
+    <ClCompile Include="Prefabs\Player\Player.cpp" />
+    <ClCompile Include="Prefabs\Button\Button.cpp" />
     <ClCompile Include="Materials\DiffuseMaterial\DiffuseMaterial.cpp" />
     <ClCompile Include="Materials\DiffuseMaterial_Skinned\DiffuseMaterial_Skinned.cpp" />
     <ClCompile Include="Materials\Post\PostGrayscale.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
     <ClCompile Include="Materials\Post\PostBlur.cpp" />
+    <ClCompile Include="Scenes\Pyre\PyreScene.cpp" />
     <ClCompile Include="Scenes\Pyre\MenuScene.cpp" />
     <ClCompile Include="Prefabs\BoneObject.cpp" />
     <ClCompile Include="Prefabs\Character.cpp" />
@@ -120,6 +127,8 @@
     <ClCompile Include="Scenes\Week 7\HardwareSkinningScene.cpp" />
     <ClCompile Include="Scenes\Week 8\ShadowMappingScene.cpp" />
     <ClCompile Include="Scenes\Week 9\ParticleScene.cpp" />
+    <ClCompile Include="Materials\Skybox\SkyboxMaterial.cpp" />
+    <ClCompile Include="Prefabs\Skybox.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
@@ -137,6 +146,7 @@
     </ClCompile>
     <ClCompile Include="Scenes\Week 4\UberMaterialScene.cpp" />
     <ClCompile Include="Materials\UberMaterial\UberMaterial.cpp" />
+    <ClCompile Include="Prefabs\Team\Team.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OverlordEngine\OverlordEngine.vcxproj">
@@ -144,12 +154,19 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prefabs\CharacterHUD\CharacterHUD.h" />
+    <ClInclude Include="Materials\Shadow\ColorMaterial_Shadow.h" />
+    <ClInclude Include="Prefabs\Pedestal\Pedestal.h" />
+    <ClInclude Include="Prefabs\Orb\Orb.h" />
+    <ClInclude Include="Prefabs\Player\Player.h" />
+    <ClInclude Include="Prefabs\Button\Button.h" />
     <ClInclude Include="Materials\DiffuseMaterial\DiffuseMaterial.h" />
     <ClInclude Include="Materials\DiffuseMaterial_Skinned\DiffuseMaterial_Skinned.h" />
     <ClInclude Include="Materials\Post\PostGrayscale.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
     <ClInclude Include="Materials\Post\PostBlur.h" />
+    <ClInclude Include="Scenes\Pyre\PyreScene.h" />
     <ClInclude Include="Scenes\Pyre\MenuScene.h" />
     <ClInclude Include="Prefabs\BoneObject.h" />
     <ClInclude Include="Prefabs\Character.h" />
@@ -171,10 +188,13 @@
     <ClInclude Include="Scenes\Week 7\HardwareSkinningScene.h" />
     <ClInclude Include="Scenes\Week 8\ShadowMappingScene.h" />
     <ClInclude Include="Scenes\Week 9\ParticleScene.h" />
+    <ClInclude Include="Materials\Skybox\SkyboxMaterial.h" />
+    <ClInclude Include="Prefabs\Skybox.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="Scenes\Week 4\UberMaterialScene.h" />
     <ClInclude Include="Materials\UberMaterial\UberMaterial.h" />
+    <ClInclude Include="Prefabs\Team\Team.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

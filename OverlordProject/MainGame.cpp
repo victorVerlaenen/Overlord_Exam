@@ -26,7 +26,7 @@
 #endif
 
 #ifdef W4
-#include "Scenes/Week 4/ModelTestScene.h"
+//#include "Scenes/Week 4/ModelTestScene.h"
 #include "Scenes/Week 4/UberMaterialScene.h"
 #include "Scenes/Week 4/SpikyScene.h"
 #include "Scenes/Week 4/SpriteTestScene.h"
@@ -78,13 +78,14 @@
 #pragma endregion
 
 #ifdef MILESTONE_3
-#include "Scenes/Week 8/ShadowMappingScene.h"
+//#include "Scenes/Week 8/ShadowMappingScene.h"
 #include "Scenes/Week 9/ParticleScene.h"
-#include "Scenes/Week 10/PostProcessingScene.h"
+//#include "Scenes/Week 10/PostProcessingScene.h"
 #endif
 
 #ifdef PYRE
 #include "Scenes/Pyre/MenuScene.h"
+#include "Scenes/Pyre/PyreScene.h"
 #endif
 #pragma endregion
 
@@ -94,6 +95,9 @@ void MainGame::OnGamePreparing(GameContext& /*gameContext*/)
 	//Here you can change some game settings before engine initialize
 	//gameContext.windowWidth=... (default is 1280)
 	//gameContext.windowHeight=... (default is 720)
+	//gameContext.windowWidth = 1920;
+	//gameContext.windowHeight = 1080;
+
 
 	//gameContext.windowTitle = L"GP2 - Milestone 3 (2022) | (2DAE13) Doe John";
 	//gameContext.windowTitle = L"GP2 - Exam Project (2022) | (2DAE13) Doe John";
@@ -109,16 +113,16 @@ void MainGame::Initialize()
 #endif
 
 #ifdef W4
-	SceneManager::Get()->AddGameScene(new ModelTestScene());
+	//SceneManager::Get()->AddGameScene(new ModelTestScene());
 	SceneManager::Get()->AddGameScene(new UberMaterialScene());
-	SceneManager::Get()->AddGameScene(new SpikyScene());
-	SceneManager::Get()->AddGameScene(new SpriteTestScene());
+	//SceneManager::Get()->AddGameScene(new SpikyScene());
+	//SceneManager::Get()->AddGameScene(new SpriteTestScene());
 #endif
 
 #ifdef W5
 	SceneManager::Get()->AddGameScene(new FontTestScene());
-	SceneManager::Get()->AddGameScene(new PickingScene());
-	SceneManager::Get()->AddGameScene(new CharacterScene());
+	//SceneManager::Get()->AddGameScene(new PickingScene());
+	//SceneManager::Get()->AddGameScene(new CharacterScene());
 #endif
 
 #ifdef W6
@@ -160,26 +164,27 @@ void MainGame::Initialize()
 #endif
 
 #ifdef MILESTONE_3
-	SceneManager::Get()->AddGameScene(new ShadowMappingScene());
+	//SceneManager::Get()->AddGameScene(new ShadowMappingScene());
 	SceneManager::Get()->AddGameScene(new ParticleScene());
-	SceneManager::Get()->AddGameScene(new PostProcessingScene());
+	//SceneManager::Get()->AddGameScene(new PostProcessingScene());
 #endif
 
 #ifdef PYRE
 	SceneManager::Get()->AddGameScene(new MenuScene());
+	//SceneManager::Get()->AddGameScene(new PyreScene());
 #endif
 }
 
 LRESULT MainGame::WindowProcedureHook(HWND /*hWnd*/, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
-	if(message == WM_KEYUP)
+	if (message == WM_KEYUP)
 	{
 		if ((lParam & 0x80000000) != 0x80000000)
 			return -1;
 
 		//[F1] Toggle Scene Info Overlay
-		if(wParam == VK_F1)
+		if (wParam == VK_F1)
 		{
 			const auto pScene = SceneManager::Get()->GetActiveScene();
 			pScene->GetSceneSettings().Toggle_ShowInfoOverlay();
@@ -215,7 +220,7 @@ LRESULT MainGame::WindowProcedureHook(HWND /*hWnd*/, UINT message, WPARAM wParam
 			pScene->GetPhysxProxy()->NextPhysXFrame();
 		}
 	}
-	
+
 
 	return -1;
 }

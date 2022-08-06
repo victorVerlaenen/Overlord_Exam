@@ -7,7 +7,6 @@ void ParticleScene::Initialize()
 {
 	m_SceneContext.settings.drawGrid = false;
 	m_SceneContext.settings.enableOnGUI = true;
-
 	//Particle System
 	ParticleEmitterSettings settings{};
 	/*settings.velocity = { 0.f,6.f,0.f };
@@ -24,7 +23,7 @@ void ParticleScene::Initialize()
 	settings.velocity = { 0.f,6.f,0.f };
 	settings.minSize = 5.f;
 	settings.maxSize = 6.f;
-	settings.minEnergy = 2.f;
+	settings.minEnergy = 1.f;
 	settings.maxEnergy = 2.f;
 	settings.minScale = -5.f;
 	settings.maxScale = -6.0f;
@@ -43,38 +42,13 @@ void ParticleScene::Initialize()
 	pMaterial->SetColor(XMFLOAT4{ Colors::White });
 	pModel->SetMaterial(pMaterial);
 	m_pTeapot->GetTransform()->Scale(.3f, .3f, .3f);
+
+	m_pEmitter->GetTransform()->Translate(10, 0, 0);
 }
 
 void ParticleScene::Update()
 {
-	//Rotate Teapot
-	m_pTeapot->GetTransform()->Rotate(.0f, XM_PIDIV2 * m_SceneContext.pGameTime->GetTotal(), .0f, false);
-
-	//Move Particle System
-	auto particlePosition = m_pEmitter->GetTransform()->GetPosition();
-	const auto moveSpeed = 10.f * m_SceneContext.pGameTime->GetElapsed();
-
-	if(m_AutoMove)
-		particlePosition.x += moveSpeed * sin(m_SceneContext.pGameTime->GetTotal());
-
-	if(InputManager::IsKeyboardKey(InputState::down, VK_RIGHT))
-	{
-		particlePosition.x += moveSpeed;
-	}
-	if (InputManager::IsKeyboardKey(InputState::down, VK_LEFT))
-	{
-		particlePosition.x -= moveSpeed;
-	}
-	if (InputManager::IsKeyboardKey(InputState::down, VK_UP))
-	{
-		particlePosition.z += moveSpeed;
-	}
-	if (InputManager::IsKeyboardKey(InputState::down, VK_DOWN))
-	{
-		particlePosition.z -= moveSpeed;
-	}
-
-	m_pEmitter->GetTransform()->Translate(particlePosition);
+	
 }
 
 void ParticleScene::OnGUI()

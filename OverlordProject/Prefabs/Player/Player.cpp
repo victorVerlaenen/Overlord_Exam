@@ -1,39 +1,21 @@
 #include "stdafx.h"
 #include "Player.h"
 
+#include "Materials/DiffuseMaterial/DiffuseMaterial.h"
 #include "Materials/DiffuseMaterial_Skinned/DiffuseMaterial_Skinned.h"
 #include "Prefabs/CharacterHUD/CharacterHUD.h"
 #include "Prefabs/Orb/Orb.h"
+#include "Prefabs/Team/Team.h"
 
-std::vector<Player*> Player::m_pTeam01 = std::vector<Player*>{};
-std::vector<Player*> Player::m_pTeam02 = std::vector<Player*>{};
-
-Player::Player(const PlayerDesc& characterDesc, bool isTeamOne) :
+Player::Player(const PlayerDesc& characterDesc, float radius) :
 	m_PlayerDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
 	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime),
-	m_IsTeamOne(isTeamOne)
+	m_AuraRadius(radius)
 {
 
 }
 
-bool Player::HasOrb() const
-{
-	if (m_pOrb != nullptr)
-	{
-		return true;
-	}
-	return false;
-}
-
-bool Player::IsTeamOne() const
-{
-	if(m_IsTeamOne)
-	{
-		return true;
-	}
-	return false;
-}
 
 void Player::Initialize(const SceneContext& /*sceneContext*/)
 {
@@ -51,18 +33,8 @@ void Player::Initialize(const SceneContext& /*sceneContext*/)
 
 	const auto pMouseMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Skinned>();
 
-	if (m_IsTeamOne)
-	{
-		pMouseMaterial->SetDiffuseTexture(L"Textures/Mouse_albedo_red.jpg");
-		m_pTeam01.emplace_back(this);
-		m_pTeam = &m_pTeam01;
-	}
-	else
-	{
-		pMouseMaterial->SetDiffuseTexture(L"Textures/Mouse_albedo_blue.jpg");
-		m_pTeam02.emplace_back(this);
-		m_pTeam = &m_pTeam02;
-	}
+	pMouseMaterial->SetDiffuseTexture(static_cast<Team*>(GetParent())->GetTexturePath());
+
 	pModelComponent->SetMaterial(pMouseMaterial);
 
 	m_pCharacterObject->GetTransform()->Translate(m_pControllerComponent->GetFootPosition());
@@ -70,114 +42,76 @@ void Player::Initialize(const SceneContext& /*sceneContext*/)
 	m_pAnimator = pModelComponent->GetAnimator();
 	m_pAnimator->SetAnimation(L"Idle");
 	m_pAnimator->Play();
-	std::wcout << m_pAnimator->GetClipName() << std::endl;
 
-	//Camera
-	//const auto pCamera = AddChild(new FixedCamera());
-	//m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
-	//m_pCameraComponent->SetActive(true); //Uncomment to make this camera the active camera
-
-	//pCamera->GetTransform()->Translate(0.f, m_PlayerDesc.controller.height * .5f, -10.f);
+	const auto pAura = AddChild(new GameObject());
+	pAura->GetTransform()->Translate(XMFLOAT3{ m_pControllerComponent->GetFootPosition().x, m_pControllerComponent->GetFootPosition().y + .2f,  m_pControllerComponent->GetFootPosition().z });
+	pAura->GetTransform()->Scale(m_AuraRadius);
+	const auto pModel = pAura->AddComponent(new ModelComponent(L"Meshes/UnitPlane.ovm"));
+	const auto pAuraMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial>();
+	pAuraMaterial->SetDiffuseTexture(static_cast<Team*>(GetParent())->GetAuraTexturePath());
+	pModel->SetMaterial(pAuraMaterial);
 }
 
 void Player::Update(const SceneContext& sceneContext)
 {
+	if (m_pAnimator->GetClipName() == L"Passing")
+	{
+		m_PassingTimer += sceneContext.pGameTime->GetElapsed();
+		if (m_PassingTimer >= (m_pAnimator->GetClip(3).duration - 10) / m_pAnimator->GetClip(3).ticksPerSecond)
+		{
+			m_pAnimator->SetAnimation(L"Idle");
+			m_PassingTimer = 0;
+		}
+	}
 	if (m_IsActive)
 	{
 		//Passing behaviour
 		///////////////////////
 		//Check if this player has the orb
-		if (HasOrb())
+
+		const auto pTeam = static_cast<Team*>(GetParent());
+		//If orb just got passed => do nothing
+		if (pTeam->GetJustPassed() == true)
 		{
-			//If orb just got passed => do nothing
-			if (m_pOrb->GetPassed() == true)
+			pTeam->ResetPass();
+			return;
+		}
+
+		//Check for pass input
+		if (sceneContext.pInput->IsActionTriggered(m_PlayerDesc.actionId_PassNext))
+		{
+			if (HasOrb())
 			{
-				m_pOrb->SetPassed(false);
-				return;
+				m_pAnimator->SetAnimation(L"Passing");
+				pTeam->PassToNextPlayer();
 			}
-
-			int currentIndex{ 0 };
-			//Check for pass input
-			if (sceneContext.pInput->IsActionTriggered(m_PlayerDesc.actionId_PassNext))
+			else
 			{
-				//get current active player
-				for (int i{}; i < m_pTeam->size(); ++i)
-				{
-					if (m_pTeam->at(i) == this)
-					{
-						currentIndex = i;
-						break;
-					}
-				}
-
-				//Set next player in list to active (and also set the orb and other player variables)
-				if (currentIndex == m_pTeam->size() - 1)
-				{
-					//Pass to 0
-					m_pOrb->SetPlayer(m_pTeam->at(0));
-					m_pTeam->at(0)->SetActive(true);
-					m_pTeam->at(0)->SetOrb(m_pOrb);
-				}
-				else
-				{
-					//Pass next
-					m_pOrb->SetPlayer(m_pTeam->at(currentIndex + 1));
-
-					m_pTeam->at(currentIndex + 1)->SetActive(true);
-					m_pTeam->at(currentIndex + 1)->SetOrb(m_pOrb);
-				}
-
-				//deactivate current player and set to idle
-				SetActive(false);
 				if (m_pAnimator->GetClipName() != L"Idle")
 				{
 					m_pAnimator->SetAnimation(L"Idle");
 				}
-
-				//set orb to just passed and make sure this player doesnt hold the orb anymore
-				m_pOrb->SetPassed(true);
-				m_pOrb = nullptr;
-
-				//Set Character HUD
-				
-
-				return;
+				pTeam->ActiveNextPlayer();
 			}
-			//Idem above
-			if (sceneContext.pInput->IsActionTriggered(m_PlayerDesc.actionId_PassPrevious))
+			return;
+		}
+		//Idem above
+		if (sceneContext.pInput->IsActionTriggered(m_PlayerDesc.actionId_PassPrevious))
+		{
+			if (HasOrb())
 			{
-				for (int i{}; i < m_pTeam->size(); ++i)
-				{
-					if (m_pTeam->at(i) == this)
-					{
-						currentIndex = i;
-						break;
-					}
-				}
-				if (currentIndex == 0)
-				{
-					//Pass to Last
-					m_pOrb->SetPlayer(m_pTeam->at(m_pTeam->size() - 1));
-					m_pTeam->at(m_pTeam->size() - 1)->SetActive(true);
-					m_pTeam->at(m_pTeam->size() - 1)->SetOrb(m_pOrb);
-				}
-				else
-				{
-					//Pass previous
-					m_pOrb->SetPlayer(m_pTeam->at(currentIndex - 1));
-					m_pTeam->at(currentIndex - 1)->SetActive(true);
-					m_pTeam->at(currentIndex - 1)->SetOrb(m_pOrb);
-				}
-
-				SetActive(false);
+				m_pAnimator->SetAnimation(L"Passing");
+				pTeam->PassToPreviousPlayer();
+			}
+			else
+			{
 				if (m_pAnimator->GetClipName() != L"Idle")
 				{
 					m_pAnimator->SetAnimation(L"Idle");
 				}
-				m_pOrb->SetPassed(true);
-				m_pOrb = nullptr;
-				return;
+				pTeam->ActivePreviousPlayer();
 			}
+			return;
 		}
 
 		constexpr float epsilon{ 0.01f }; //Constant that can be used to compare if a float is near zero
@@ -188,7 +122,7 @@ void Player::Update(const SceneContext& sceneContext)
 
 		//if right trigger is pressed
 		float triggerPressure{};
-		triggerPressure = sceneContext.pInput->GetTriggerPressure(false, m_IsTeamOne ? GamepadIndex::playerOne : GamepadIndex::playerTwo);
+		triggerPressure = sceneContext.pInput->GetTriggerPressure(false, pTeam->GetTeamNumber() == 1 ? GamepadIndex::playerOne : GamepadIndex::playerTwo);
 
 		if (triggerPressure > epsilon)
 		{
@@ -206,26 +140,12 @@ void Player::Update(const SceneContext& sceneContext)
 		//Optional: if move.y is near zero (abs(move.y) < epsilon), you could use the ThumbStickPosition.y for movement
 		if (std::abs(move.y) < epsilon)
 		{
-			if (m_IsTeamOne == true)
-			{
-				move.y = sceneContext.pInput->GetThumbstickPosition(true, GamepadIndex::playerOne).y;
-			}
-			else
-			{
-				move.y = sceneContext.pInput->GetThumbstickPosition(true, GamepadIndex::playerTwo).y;
-			}
+			move.y = sceneContext.pInput->GetThumbstickPosition(true, pTeam->GetTeamNumber() == 1 ? GamepadIndex::playerOne : GamepadIndex::playerTwo).y;
 		}
 		//Optional: if move.x is near zero (abs(move.x) < epsilon), you could use the Left ThumbStickPosition.x for movement
 		if (std::abs(move.x) < epsilon)
 		{
-			if (m_IsTeamOne == true)
-			{
-				move.x = sceneContext.pInput->GetThumbstickPosition(true, GamepadIndex::playerOne).x;
-			}
-			else
-			{
-				move.x = sceneContext.pInput->GetThumbstickPosition(true, GamepadIndex::playerTwo).x;
-			}
+			move.x = sceneContext.pInput->GetThumbstickPosition(true, pTeam->GetTeamNumber() == 1 ? GamepadIndex::playerOne : GamepadIndex::playerTwo).x;
 		}
 
 
@@ -378,7 +298,7 @@ void Player::DrawImGui()
 void Player::SetActive(bool value)
 {
 	m_IsActive = value;
-	if (m_pAnimator->GetClipName() != L"Idle")
+	if (m_pAnimator != nullptr && m_pAnimator->GetClipName() != L"Idle" && m_pAnimator->GetClipName() != L"Passing")
 	{
 		m_pAnimator->SetAnimation(L"Idle");
 	}

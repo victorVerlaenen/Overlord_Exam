@@ -2,10 +2,10 @@
 class Button;
 class DiffuseMaterial_Shadow;
 
-class MenuScene final : public GameScene
+class MenuScene : public GameScene
 {
 public:
-	MenuScene();
+	MenuScene(bool isPause = false);
 	~MenuScene() override = default;
 
 	MenuScene(const MenuScene& other) = delete;
@@ -14,19 +14,23 @@ public:
 	MenuScene& operator=(MenuScene&& other) noexcept = delete;
 
 protected:
-	void Initialize() override;
-	void Update() override;
-	void Draw() override;
-	void OnGUI() override;
-
-private:
 	enum InputIds
 	{
 		Select,
 	};
 
-	std::vector<Button*> m_pButtons{};
+	void Initialize() override;
+	void Update() override;
+	void Draw() override;
+	void OnGUI() override;
+	void OnSceneActivated() override;
+	void OnSceneDeactivated() override;
+private:
 
+	void AddMainMenuButtons();
+	void AddPauseButtons();
+
+	std::vector<Button*> m_pButtons{};
 	DiffuseMaterial_Shadow* m_pBookMaterial;
 	GameObject* m_pLeftPileOfBooks, * m_pRightPileOfBooks;
 	GameObject* m_pBackground;
@@ -37,4 +41,5 @@ private:
 	const float m_NavigationCooldown{ 0.2f };
 
 	FMOD::Sound* m_pMenuTrack{};
+	bool m_IsPause{};
 };

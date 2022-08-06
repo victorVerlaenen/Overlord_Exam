@@ -13,6 +13,7 @@ public:
 	void NextScene();
 	void PreviousScene();
 	GameScene* GetActiveScene() const { return m_ActiveScene; }
+	GameScene* GetScene(const std::wstring& sceneName) const;
 	const SceneContext& GetActiveSceneContext() const { return m_ActiveScene->GetSceneContext(); }
 	SceneSettings& GetActiveSceneSettings() const { return m_ActiveScene->GetSceneSettings(); }
 

@@ -1,11 +1,14 @@
 #pragma once
+class Vignette;
+class Pedestal;
+class Team;
 class Orb;
 class Player;
 
 class PyreScene : public GameScene
 {
 public:
-	PyreScene() :GameScene(L"PyreScene") {}
+	PyreScene() ;
 	~PyreScene() override = default;
 	PyreScene(const PyreScene& other) = delete;
 	PyreScene(PyreScene&& other) noexcept = delete;
@@ -18,7 +21,9 @@ protected:
 	void Initialize() override;
 	void OnGUI() override;
 	void Update() override;
-	void PostDraw() override;
+	void Draw() override;
+	void OnSceneActivated() override;
+	void OnSceneDeactivated() override;
 private:
 	enum InputIds
 	{
@@ -27,13 +32,31 @@ private:
 		Player01PassPrevious,
 		Player02Jump,
 		Player02PassNext,
-		Player02PassPrevious
+		Player02PassPrevious,
+		Pause
 	};
-	
+
+	void AddTeams();
+	void AddInputs() const;
+	void AddLevel();
+	void AddControls();
+
+	void UpdateCamera();
+
 	std::vector<XMFLOAT3> m_StartingPositions{	{-10.f, 1.5f, 0.f},
 												{-12.f, 1.5f, 5.f},
 												{-12.f, 1.5f, -5.f} };
 	Orb* m_pOrb{};
+	Team* m_pTeam_01{}, * m_pTeam_02{};
+	FixedCamera* m_pCamera{};
+	Vignette* m_pVignette{};
+	Pedestal* m_pPedestal{};
+	XMVECTOR m_CurrentCameraRotation{};
+	SpriteFont* m_pControlsFont{};
+
+	XMFLOAT3 m_ControlsPosition{ };
+
+	FMOD::Sound* m_pGameTrack{};
 	//float m_ShadowMapScale{ 0.3f };
 	//bool m_DrawShadowMap{ false };
 	//GameObject* m_pSmallRock;

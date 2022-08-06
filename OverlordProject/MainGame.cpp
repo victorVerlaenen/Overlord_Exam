@@ -171,7 +171,8 @@ void MainGame::Initialize()
 
 #ifdef PYRE
 	SceneManager::Get()->AddGameScene(new MenuScene());
-	//SceneManager::Get()->AddGameScene(new PyreScene());
+	SceneManager::Get()->AddGameScene(new PyreScene());
+	SceneManager::Get()->AddGameScene(new MenuScene(true));
 #endif
 }
 

@@ -13,8 +13,6 @@ public:
 	Orb& operator=(Orb&& other) noexcept = delete;
 
 	void SetPlayer(Player* pPlayer) { m_pPlayerPickedUp = pPlayer; }
-	void SetPassed(bool value) { m_JustPassed = value; }
-	bool GetPassed() const { return m_JustPassed; }
 	void SetIsPickedUp(bool value) { m_IsPickedUp = value; }
 
 protected:
@@ -26,6 +24,5 @@ private:
 
 	bool m_IsPickedUp{ false };
 	Player* m_pPlayerPickedUp{ nullptr };
-	bool m_JustPassed{ false };
 };
 

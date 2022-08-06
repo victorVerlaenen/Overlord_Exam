@@ -178,12 +178,6 @@ void GameScene::RootDraw()
 		pChild->RootDraw(m_SceneContext);
 	}
 
-	//SpriteRenderer Draw
-	SpriteRenderer::Get()->Draw(m_SceneContext);
-
-	//TextRenderer Draw
-	TextRenderer::Get()->Draw(m_SceneContext);
-
 	//Object-Scene Post-Draw
 	PostDraw();
 	for (const auto pChild : m_pChildren)
@@ -235,9 +229,15 @@ void GameScene::RootDraw()
 			m_pGame->SetRenderTarget(nullptr);
 			//		- Use SpriteRenderer::DrawImmediate to render the ShaderResourceView from PREV_RT to the screen
 			SpriteRenderer::Get()->DrawImmediate(m_SceneContext.d3dContext, pPreviousRenderTarget->GetColorShaderResourceView(), { 0.f, 0.f });
-
+			
 			//Done!
 		}
+
+	//SpriteRenderer Draw
+	SpriteRenderer::Get()->Draw(m_SceneContext);
+
+	//TextRenderer Draw
+	TextRenderer::Get()->Draw(m_SceneContext);
 #pragma endregion
 }
 

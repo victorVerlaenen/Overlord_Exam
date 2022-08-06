@@ -91,13 +91,15 @@ void MainGS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 	float3 topLeft, topRight, bottomLeft, bottomRight;
 	float size = vertex[0].Size;
 	float3 origin = vertex[0].Position;
-	float halfSize = size / 2.0f;
 
-	//Vertices (Keep in mind that 'origin' contains the center of the quad
-	topLeft = origin + float3(-halfSize, halfSize, 0);
-	topRight = origin + float3(halfSize, halfSize, 0);
-	bottomLeft = origin + float3(-halfSize, -halfSize, 0);
-	bottomRight = origin + float3(halfSize, -halfSize, 0);
+	//This is the 2x2 rotation matrix we need to transform our TextureCoordinates (Texture Rotation)
+	float3x3 uvRotation = { cos(vertex[0].Rotation), -sin(vertex[0].Rotation), 0, sin(vertex[0].Rotation), cos(vertex[0].Rotation), 0, 0, 0, 1 };
+
+	//Vertices
+	topLeft = mul(float3(-size, size, 0), uvRotation);
+	topRight = mul(float3(size, size, 0), uvRotation);
+	bottomLeft = mul(float3(-size, -size, 0), uvRotation);
+	bottomRight = mul(float3(size, -size, 0), uvRotation);
 
 	//Transform the vertices using the ViewInverse (Rotational Part Only!!! (~ normal transformation)), this will force them to always point towards the camera (cfr. BillBoarding)
 	topLeft = mul(topLeft, (float3x3)gViewInverse);
@@ -105,14 +107,11 @@ void MainGS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 	bottomLeft = mul(bottomLeft, (float3x3)gViewInverse);
 	bottomRight = mul(bottomRight, (float3x3)gViewInverse);
 
-	//This is the 2x2 rotation matrix we need to transform our TextureCoordinates (Texture Rotation)
-	float2x2 uvRotation = { cos(vertex[0].Rotation), -sin(vertex[0].Rotation), sin(vertex[0].Rotation), cos(vertex[0].Rotation) };
-
-	//Create Geometry (Trianglestrip)
-	CreateVertex(triStream, bottomLeft, float2(0, 1), vertex[0].Color, uvRotation);
-	CreateVertex(triStream, topLeft, float2(0, 0), vertex[0].Color, uvRotation);
-	CreateVertex(triStream, bottomRight, float2(1, 1), vertex[0].Color, uvRotation);
-	CreateVertex(triStream, topRight, float2(1, 0), vertex[0].Color, uvRotation);
+	//Create Geometry (Trianglestrip) (Keep in mind that 'origin' contains the center of the quad)
+	CreateVertex(triStream, bottomLeft + origin, float2(0, 1), vertex[0].Color, uvRotation);
+	CreateVertex(triStream, topLeft + origin, float2(0, 0), vertex[0].Color, uvRotation);
+	CreateVertex(triStream, bottomRight + origin, float2(1, 1), vertex[0].Color, uvRotation);
+	CreateVertex(triStream, topRight + origin, float2(1, 0), vertex[0].Color, uvRotation);
 }
 
 //PIXEL SHADER

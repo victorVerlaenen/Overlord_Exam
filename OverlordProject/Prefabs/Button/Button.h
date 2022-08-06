@@ -2,7 +2,7 @@
 class Button : public GameObject
 {
 public:
-	Button(const std::wstring& text, XMFLOAT2 position, XMFLOAT4 color, XMFLOAT2 bounds, int actionIdSelect);
+	Button(const std::wstring& text, XMFLOAT2 position, XMFLOAT4 color, int actionIdSelect);
 	~Button() override = default;
 	Button(const Button& other) = delete;
 	Button(Button&& other) noexcept = delete;
@@ -24,7 +24,6 @@ private:
 	std::wstring m_Text{};
 	XMFLOAT2 m_Position{};
 	XMFLOAT4 m_Color{};
-	XMFLOAT2 m_Bounds{};
 
 	bool m_Selected{ false };
 

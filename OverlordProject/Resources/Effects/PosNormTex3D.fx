@@ -21,6 +21,7 @@ struct VS_INPUT{
 	float3 normal : NORMAL;
 	float2 texCoord : TEXCOORD;
 };
+
 struct VS_OUTPUT{
 	float4 pos : SV_POSITION;
 	float3 normal : NORMAL;
@@ -30,7 +31,19 @@ struct VS_OUTPUT{
 DepthStencilState EnableDepth
 {
 	DepthEnable = TRUE;
-	DepthWriteMask = ALL;
+	DepthWriteMask = ZERO;
+};
+
+BlendState AlphaBlending
+{
+	BlendEnable[0] = TRUE;
+	SrcBlend = SRC_ALPHA;
+	DestBlend = INV_SRC_ALPHA;
+	BlendOp = ADD;
+	SrcBlendAlpha = ONE;
+	DestBlendAlpha = ZERO;
+	BlendOpAlpha = ADD;
+	RenderTargetWriteMask[0] = 0x0f;
 };
 
 RasterizerState NoCulling
@@ -38,7 +51,7 @@ RasterizerState NoCulling
 	CullMode = NONE;
 };
 
-BlendState NoBlending
+BlendState gBlendState
 {
 	BlendEnable[0] = TRUE;
 	SrcBlend = SRC_ALPHA;
@@ -88,7 +101,7 @@ technique11 Default
     {
 		SetRasterizerState(NoCulling);
 		SetDepthStencilState(EnableDepth, 0);
-		SetBlendState(NoBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
+		SetBlendState(AlphaBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
 
 		SetVertexShader( CompileShader( vs_4_0, VS() ) );
 		SetGeometryShader( NULL );

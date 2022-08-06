@@ -1,37 +1,28 @@
 #include "stdafx.h"
 #include "PyreScene.h"
 
-#include "Materials/ColorMaterial.h"
-#include "Materials/DiffuseMaterial/DiffuseMaterial.h"
+#include "MenuScene.h"
+#include "Materials/DiffuseMaterial_Skinned/DiffuseMaterial_Skinned.h"
+#include "Materials/Post/Vignette.h"
 #include "Materials/Shadow/ColorMaterial_Shadow.h"
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
-#include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
-#include "Materials/UberMaterial/UberMaterial.h"
 #include "Prefabs/CharacterHUD/CharacterHUD.h"
 #include "Prefabs/Orb/Orb.h"
 #include "Prefabs/Pedestal/Pedestal.h"
 #include "Prefabs/Player/Player.h"
+#include "Prefabs/Team/Team.h"
+
+PyreScene::PyreScene()
+	:GameScene(L"PyreScene")
+	, m_pControlsFont(ContentManager::Load<SpriteFont>(L"SpriteFonts/Nightwarrior_32.fnt"))
+{
+
+}
 
 void PyreScene::GoalReset() const
 {
-	Player::m_pTeam01[0]->GetTransform()->Translate(m_StartingPositions[0]);
-	Player::m_pTeam01[0]->SetActive(true);
-
-	Player::m_pTeam01[1]->GetTransform()->Translate(m_StartingPositions[1]);
-	Player::m_pTeam01[1]->SetActive(false);
-
-	Player::m_pTeam01[2]->GetTransform()->Translate(m_StartingPositions[2]);
-	Player::m_pTeam01[2]->SetActive(false);
-
-	//Player2
-	Player::m_pTeam02[0]->GetTransform()->Translate(XMFLOAT3(-m_StartingPositions[0].x, m_StartingPositions[0].y, -m_StartingPositions[0].z));
-	Player::m_pTeam02[0]->SetActive(true);
-
-	Player::m_pTeam02[1]->GetTransform()->Translate(XMFLOAT3(-m_StartingPositions[1].x, m_StartingPositions[1].y, -m_StartingPositions[1].z));
-	Player::m_pTeam02[1]->SetActive(false);
-
-	Player::m_pTeam02[2]->GetTransform()->Translate(XMFLOAT3(-m_StartingPositions[2].x, m_StartingPositions[2].y, -m_StartingPositions[2].z));
-	Player::m_pTeam02[2]->SetActive(false);
+	m_pTeam_01->ResetTeam();
+	m_pTeam_02->ResetTeam();
 
 	m_pOrb->GetTransform()->Translate(0, 4, 0);
 	m_pOrb->SetIsPickedUp(false);
@@ -45,60 +36,156 @@ void PyreScene::Initialize()
 
 	m_SceneContext.pLights->SetDirectionalLight({ 13.f,36.4f,-45.5f }, { -0.248543f, -0.690067f, 0.67973f });
 
+	//Sound
+	SoundManager::Get()->GetSystem()->createStream("Resources/Audio/GameTrack.mp3", FMOD_LOOP_NORMAL, nullptr, &m_pGameTrack);
+	
 	//physics Ground Plane
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 	GameSceneExt::CreatePhysXGroundPlane(*this, pDefaultMaterial);
 
-	//Character
+	//Orb
+	m_pOrb = AddChild(new Orb());
+	m_pOrb->GetTransform()->Translate(0, 4, 0);
+
+	AddLevel();
+
+	AddTeams();
+
+	m_ControlsPosition = XMFLOAT3{ m_SceneContext.windowWidth / 2.f, m_SceneContext.windowHeight - 120, 0.9f };
+	AddControls();
+
+	//Set Camera
+	m_pCamera = AddChild(new FixedCamera());
+	m_pCamera->GetTransform()->Translate(0.f, 25.f, -20.3f);
+	constexpr auto cameraRotation = XMFLOAT4{ 0.413094f, 0.0101533f, -0.00460595f, 1.0f };
+	const auto cameraRotationLoaded = XMLoadFloat4(&cameraRotation);
+	m_CurrentCameraRotation = cameraRotationLoaded;
+	m_pCamera->GetTransform()->Rotate(cameraRotationLoaded);
+	m_pCamera->GetComponent<CameraComponent>()->SetActive(true);
+
+	AddInputs();
+
+	//Post Processing Stack
+	//=====================
+	m_pVignette = MaterialManager::Get()->CreateMaterial<Vignette>();
+	AddPostProcessingEffect(m_pVignette);
+}
+
+void PyreScene::OnGUI()
+{
+
+}
+
+void PyreScene::Update()
+{
+	UpdateCamera();
+	if (m_SceneContext.pInput->IsActionTriggered(Pause))
+	{
+		const auto pSceneManager = SceneManager::Get();
+		pSceneManager->NextScene();
+	}
+}
+
+void PyreScene::Draw()
+{
+	TextRenderer::Get()->DrawText(m_pControlsFont, L"Move", XMFLOAT2{ m_ControlsPosition.x - 100, m_ControlsPosition.y-20}, XMFLOAT4{ Colors::White });
+	TextRenderer::Get()->DrawText(m_pControlsFont, L"Sprint", XMFLOAT2{ m_ControlsPosition.x + 50, m_ControlsPosition.y - 20 }, XMFLOAT4{ Colors::White });
+	TextRenderer::Get()->DrawText(m_pControlsFont, L"PassNext", XMFLOAT2{ m_ControlsPosition.x + 100, m_ControlsPosition.y + 10 }, XMFLOAT4{ Colors::White });
+	TextRenderer::Get()->DrawText(m_pControlsFont, L"PassPrev", XMFLOAT2{ m_ControlsPosition.x - 185, m_ControlsPosition.y + 10 }, XMFLOAT4{ Colors::White });
+}
+
+void PyreScene::OnSceneActivated()
+{
+	SoundManager::Get()->GetSystem()->playSound(m_pGameTrack, nullptr, false, nullptr);
+}
+
+void PyreScene::OnSceneDeactivated()
+{
+	SoundManager::Get()->GetSystem()->playSound(m_pGameTrack, nullptr, true, nullptr);
+}
+
+void PyreScene::AddTeams()
+{
+	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+
+	// TEAM 1
+	m_pTeam_01 = AddChild(new Team(m_pOrb, L"Textures/Mouse_albedo_blue.jpg", L"Textures/Aura.png"));
+	//Characters
 	PlayerDesc playerDesc{ pDefaultMaterial };
 	playerDesc.actionId_Jump = Player01Jump;
 	playerDesc.actionId_PassNext = Player01PassNext;
 	playerDesc.actionId_PassPrevious = Player01PassPrevious;
 
-	//Player1
-	auto pCharacter = AddChild(new Player(playerDesc));
+	auto pCharacter = new Player(playerDesc,1);
+	m_pTeam_01->AddPlayer(pCharacter, m_StartingPositions[0], true);
 
-	pCharacter->GetTransform()->Translate(m_StartingPositions[0]);
-	pCharacter->SetActive(true);
+	pCharacter = new Player(playerDesc,1.2f);
+	m_pTeam_01->AddPlayer(pCharacter, m_StartingPositions[1], false);
 
-	pCharacter = AddChild(new Player(playerDesc));
+	pCharacter = new Player(playerDesc,.6f);
+	m_pTeam_01->AddPlayer(pCharacter, m_StartingPositions[2], false);
+	// pedestal
+	m_pPedestal = new Pedestal(XMFLOAT2{ 100, m_SceneContext.windowHeight - 180 }, XMFLOAT4{ Colors::CadetBlue });
+	m_pTeam_01->SetPedestal(m_pPedestal, { -15.f, -.6f, 0.f });
+	// hud
+	auto pCharacterHUD = new CharacterHUD();
+	m_pTeam_01->SetHud(pCharacterHUD, { 200, m_SceneContext.windowHeight - 100, .8f });
 
-	pCharacter->GetTransform()->Translate(m_StartingPositions[1]);
-	pCharacter->SetActive(false);
 
-	pCharacter = AddChild(new Player(playerDesc));
-
-	pCharacter->GetTransform()->Translate(m_StartingPositions[2]);
-	pCharacter->SetActive(false);
-
-	//Player2
+	// TEAM 2
+	m_pTeam_02 = AddChild(new Team(m_pOrb, L"Textures/Mouse_albedo_red.jpg", L"Textures/Aura_red.png"));
+	//Characters
 	playerDesc.actionId_Jump = Player02Jump;
 	playerDesc.actionId_PassNext = Player02PassNext;
 	playerDesc.actionId_PassPrevious = Player02PassPrevious;
 
-	pCharacter = AddChild(new Player(playerDesc, false));
+	pCharacter = new Player(playerDesc,1);
+	m_pTeam_02->AddPlayer(pCharacter, XMFLOAT3(-m_StartingPositions[0].x, m_StartingPositions[0].y, -m_StartingPositions[0].z), true);
 
-	pCharacter->GetTransform()->Translate(XMFLOAT3(-m_StartingPositions[0].x, m_StartingPositions[0].y, -m_StartingPositions[0].z));
-	pCharacter->SetActive(true);
+	pCharacter = new Player(playerDesc,1.2f);
+	m_pTeam_02->AddPlayer(pCharacter, XMFLOAT3(-m_StartingPositions[1].x, m_StartingPositions[1].y, -m_StartingPositions[1].z), false);
 
-	pCharacter = AddChild(new Player(playerDesc, false));
+	pCharacter = new Player(playerDesc, .6f);
+	m_pTeam_02->AddPlayer(pCharacter, XMFLOAT3(-m_StartingPositions[2].x, m_StartingPositions[2].y, -m_StartingPositions[2].z), false);
+	// pedestal
+	const auto pPedestalObject_02 = new Pedestal(XMFLOAT2{ m_SceneContext.windowWidth - 140, m_SceneContext.windowHeight - 180 }, XMFLOAT4{ Colors::IndianRed });
+	m_pTeam_02->SetPedestal(pPedestalObject_02, { 15.f, -.6f, 0.f });
+	// hud
+	pCharacterHUD = new CharacterHUD();
+	m_pTeam_02->SetHud(pCharacterHUD, { m_SceneContext.windowWidth - 200, m_SceneContext.windowHeight - 100, .8f });
 
-	pCharacter->GetTransform()->Translate(XMFLOAT3(-m_StartingPositions[1].x, m_StartingPositions[1].y, -m_StartingPositions[1].z));
-	pCharacter->SetActive(false);
+}
 
-	pCharacter = AddChild(new Player(playerDesc, false));
+void PyreScene::AddInputs() const
+{
+	//Pause
+	auto inputAction = InputAction(Pause, InputState::pressed, -1, -1, XINPUT_GAMEPAD_START);
+	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	pCharacter->GetTransform()->Translate(XMFLOAT3(-m_StartingPositions[2].x, m_StartingPositions[2].y, -m_StartingPositions[2].z));
-	pCharacter->SetActive(false);
+	//Player 1
+	inputAction = InputAction(Player01Jump, InputState::pressed, -1, -1, XINPUT_GAMEPAD_A);
+	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	/*auto pAura = m_pCharacter->AddChild(new GameObject());
-	pAura->GetTransform()->Translate(0, -1.f, 0);
-	auto pModel = pAura->AddComponent(new ModelComponent(L"Meshes/UnitPlane.ovm"));
+	inputAction = InputAction(Player01PassNext, InputState::pressed, -1, -1, XINPUT_GAMEPAD_RIGHT_SHOULDER);
+	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	const auto pAuraMaterial_01 = MaterialManager::Get()->CreateMaterial<DiffuseMaterial>();
-	pAuraMaterial_01->SetDiffuseTexture(L"Textures/Aura.png");
+	inputAction = InputAction(Player01PassPrevious, InputState::pressed, -1, -1, XINPUT_GAMEPAD_LEFT_SHOULDER);
+	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	pModel->SetMaterial(pAuraMaterial_01);*/
+	//Player2
+	inputAction = InputAction(Player02Jump, InputState::pressed, -1, -1, XINPUT_GAMEPAD_A, GamepadIndex::playerTwo);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(Player02PassNext, InputState::pressed, -1, -1, XINPUT_GAMEPAD_RIGHT_SHOULDER, GamepadIndex::playerTwo);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(Player02PassPrevious, InputState::pressed, -1, -1, XINPUT_GAMEPAD_LEFT_SHOULDER, GamepadIndex::playerTwo);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+}
+
+void PyreScene::AddLevel()
+{
+	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 
 	//The map
 	const auto pLevelObject = AddChild(new GameObject());
@@ -134,22 +221,20 @@ void PyreScene::Initialize()
 
 	//Ground 
 	const auto pGroundPlaneObject = AddChild(new GameObject());
-	pGroundPlaneObject->GetTransform()->Scale(10);
+	pGroundPlaneObject->GetTransform()->Scale(20);
 	pGroundPlaneObject->GetTransform()->Translate(0, 0.f, 0);
 	const auto pGroundPlaneMesh = pGroundPlaneObject->AddComponent(new ModelComponent(L"Meshes/UnitPlane.ovm"));
 
 	const auto pGroundPlaneMaterial = MaterialManager::Get()->CreateMaterial<ColorMaterial_Shadow>();
-	pGroundPlaneMaterial->SetColor(XMFLOAT4(0.62f, 0.38f, 0.23f, 1.0f));
+	//const auto pGroundPlaneMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Skinned>();
+	pGroundPlaneMaterial->SetColor(XMFLOAT4(0.39f, 0.23f, 0.12f, 1.0f));
+	//pGroundPlaneMaterial->SetDiffuseTexture(L"Textures/Rocks/SmallRock_diffuse.png");
 
 	pGroundPlaneMesh->SetMaterial(pGroundPlaneMaterial);
 
-	//Orb
-	m_pOrb = AddChild(new Orb());
-	m_pOrb->GetTransform()->Translate(0, 4, 0);
-
 
 	//Rocks
-	auto pSmallRockObject_01 = AddChild(new GameObject());
+	const auto pSmallRockObject_01 = AddChild(new GameObject());
 	pSmallRockObject_01->GetTransform()->Translate(-7, 1, -10);
 	pSmallRockObject_01->GetTransform()->Rotate(95, 0, -5);
 	pSmallRockObject_01->GetTransform()->Scale(.7f, .7f, .5f);
@@ -164,7 +249,7 @@ void PyreScene::Initialize()
 
 	pSmallRockMesh->SetMaterial(pSmallRockMaterial);
 
-	auto pSmallRockObject_02 = AddChild(new GameObject());
+	const auto pSmallRockObject_02 = AddChild(new GameObject());
 	pSmallRockObject_02->GetTransform()->Translate(7, 1, -10);
 	pSmallRockObject_02->GetTransform()->Rotate(95, 180, -5);
 	pSmallRockObject_02->GetTransform()->Scale(.7f, .7f, .5f);
@@ -176,7 +261,7 @@ void PyreScene::Initialize()
 
 	pSmallRockMesh_02->SetMaterial(pSmallRockMaterial);
 
-	auto pSmallRockObject_03 = AddChild(new GameObject());
+	const auto pSmallRockObject_03 = AddChild(new GameObject());
 	pSmallRockObject_03->GetTransform()->Translate(-5, 1, 0);
 	pSmallRockObject_03->GetTransform()->Rotate(95, 100, -5);
 	pSmallRockObject_03->GetTransform()->Scale(.7f, .7f, .5f);
@@ -188,7 +273,7 @@ void PyreScene::Initialize()
 
 	pSmallRockMesh_03->SetMaterial(pSmallRockMaterial);
 
-	auto pMediumRockObject_01 = AddChild(new GameObject());
+	const auto pMediumRockObject_01 = AddChild(new GameObject());
 	pMediumRockObject_01->GetTransform()->Translate(4, 0, 0);
 	pMediumRockObject_01->GetTransform()->Rotate(90, -30, 0);
 	pMediumRockObject_01->GetTransform()->Scale(.5f, .5f, .2f);
@@ -203,7 +288,7 @@ void PyreScene::Initialize()
 
 	pMediumRockMesh_01->SetMaterial(pMediumRockMaterial);
 
-	auto pMediumRockObject_02 = AddChild(new GameObject());
+	const auto pMediumRockObject_02 = AddChild(new GameObject());
 	pMediumRockObject_02->GetTransform()->Translate(1, 0, -12);
 	pMediumRockObject_02->GetTransform()->Rotate(90, -30, -180);
 	pMediumRockObject_02->GetTransform()->Scale(.5f, .5f, .2f);
@@ -215,7 +300,7 @@ void PyreScene::Initialize()
 
 	pMediumRockMesh_02->SetMaterial(pMediumRockMaterial);
 
-	auto pBigRockObject_01 = AddChild(new GameObject());
+	const auto pBigRockObject_01 = AddChild(new GameObject());
 	pBigRockObject_01->GetTransform()->Translate(-5, 1.4f, 6);
 	pBigRockObject_01->GetTransform()->Rotate(90, 0, 220);
 	pBigRockObject_01->GetTransform()->Scale(.3f, .6f, 1.3f);
@@ -230,7 +315,7 @@ void PyreScene::Initialize()
 
 	pBigRockMesh_01->SetMaterial(pBigRockMaterial);
 
-	auto pBigRockObject_02 = AddChild(new GameObject());
+	const auto pBigRockObject_02 = AddChild(new GameObject());
 	pBigRockObject_02->GetTransform()->Translate(5, 1.4f, 6);
 	pBigRockObject_02->GetTransform()->Rotate(90, 0, 20);
 	pBigRockObject_02->GetTransform()->Scale(.3f, .6f, 1.3f);
@@ -241,92 +326,52 @@ void PyreScene::Initialize()
 	pBigRockActor_02->AddCollider(PxConvexMeshGeometry(pBigRockConvexMesh_02, PxMeshScale({ .3f, .6f, 1.3f })), *pDefaultMaterial);
 
 	pBigRockMesh_02->SetMaterial(pBigRockMaterial);
-
-	//Pedestals
-	const auto pPedestalObject_01 = AddChild(new Pedestal(XMFLOAT2{ 20, m_SceneContext.windowHeight - 84 }, false));
-	pPedestalObject_01->GetTransform()->Scale(2);
-	pPedestalObject_01->GetTransform()->Rotate(90, 0, 0);
-	pPedestalObject_01->GetTransform()->Translate(-15, -.6f, 0);
-
-	const auto pPedestalObject_02 = AddChild(new Pedestal(XMFLOAT2{ m_SceneContext.windowWidth - 100, m_SceneContext.windowHeight - 84 }, true));
-	pPedestalObject_02->GetTransform()->Scale(2);
-	pPedestalObject_02->GetTransform()->Rotate(90, 0, 0);
-	pPedestalObject_02->GetTransform()->Translate(15, -.6f, 0);
-
-	//Fire
-	ParticleEmitterSettings settings{};
-
-	settings.velocity = { 0.f,6.f,0.f };
-	settings.minSize = 2.f;
-	settings.maxSize = 3.f;
-	settings.minEnergy = 1.f;
-	settings.maxEnergy = 2.f;
-	settings.minScale = -3.f;
-	settings.maxScale = -4.0f;
-	settings.minEmitterRadius = .5f;
-	settings.maxEmitterRadius = .7f;
-	settings.color = { 0.435f,0.109f,0.721f, .6f };
-
-	const auto pRightFire = AddChild(new GameObject);
-	auto pRightFireEmitter = pRightFire->AddComponent(new ParticleEmitterComponent(L"Textures/Fire.png", settings, 200));
-	pRightFireEmitter->GetTransform()->Translate(15, -.6f, 0);
-
-	const auto pLeftFire = AddChild(new GameObject);
-	auto pLeftFireEmitter = pLeftFire->AddComponent(new ParticleEmitterComponent(L"Textures/Fire.png", settings, 200));
-	pLeftFireEmitter->GetTransform()->Translate(-15, -.6f, 0);
-
-	//Camera
-	const auto pFixedCamera = AddChild(new FixedCamera());
-
-	pFixedCamera->GetTransform()->Translate(0.f, 21.f, -20.3f);
-
-	constexpr auto cameraRotation = XMFLOAT4{ 0.413094f, 0.0101533f, -0.00460595f, 1.0f };
-	const auto cameraRotationLoaded = XMLoadFloat4(&cameraRotation);
-	pFixedCamera->GetTransform()->Rotate(cameraRotationLoaded);
-
-	pFixedCamera->GetComponent<CameraComponent>()->SetActive(true);
-
-	//HUD
-	auto pCharacterHUD = AddChild(new CharacterHUD());
-	pCharacterHUD->GetTransform()->Translate(150, m_SceneContext.windowHeight - 100, .8f);
-
-	pCharacterHUD = AddChild(new CharacterHUD());
-	pCharacterHUD->GetTransform()->Translate(m_SceneContext.windowWidth- 150, m_SceneContext.windowHeight - 100, .8f);
-
-	//Input
-	//Player 1
-	auto inputAction = InputAction(Player01Jump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(Player01PassNext, InputState::pressed, -1, -1, XINPUT_GAMEPAD_RIGHT_SHOULDER);
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(Player01PassPrevious, InputState::pressed, -1, -1, XINPUT_GAMEPAD_LEFT_SHOULDER);
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	//Player2
-	inputAction = InputAction(Player02Jump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A, GamepadIndex::playerTwo);
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(Player02PassNext, InputState::pressed, -1, -1, XINPUT_GAMEPAD_RIGHT_SHOULDER, GamepadIndex::playerTwo);
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(Player02PassPrevious, InputState::pressed, -1, -1, XINPUT_GAMEPAD_LEFT_SHOULDER, GamepadIndex::playerTwo);
-	m_SceneContext.pInput->AddInputAction(inputAction);
 }
 
-
-void PyreScene::OnGUI()
+void PyreScene::AddControls()
 {
-
+	const auto pControls = AddChild(new GameObject());
+	pControls->GetTransform()->Scale(.7f);
+	pControls->AddComponent(new SpriteComponent(L"Textures/Controls.png", { 0.5f,0.5f }, { 1.f,1.f,1.f,.5f }));
+	pControls->GetTransform()->Translate(m_ControlsPosition);
 }
 
-void PyreScene::Update()
+void PyreScene::UpdateCamera()
 {
+	auto p1 = m_pTeam_01->GetActivePlayerPosition();
+	auto p2 = m_pTeam_02->GetActivePlayerPosition();
+	XMFLOAT3 midPoint = { (p1.x + p2.x) / 2.f, (p1.y + p2.y) / 2.f, (p1.z + p2.z) / 2.f };
+	XMFLOAT3 cameraPosition = m_pCamera->GetTransform()->GetPosition();
 
-}
+	//forward
+	auto forwardVector = XMVector3Normalize(XMLoadFloat3(&midPoint) - XMLoadFloat3(&cameraPosition));
+	XMFLOAT3 forward{};
+	XMStoreFloat3(&forward, forwardVector);
 
-void PyreScene::PostDraw()
-{
+	//right
+	XMFLOAT3 worldUp{ 0,1,0 };
+	auto rightVector = XMVector3Cross(XMLoadFloat3(&worldUp), forwardVector);
+	XMFLOAT3 right{};
+	XMStoreFloat3(&right, rightVector);
 
+	//up
+	auto upVector = XMVector3Cross(forwardVector, rightVector);
+	XMFLOAT3 up{};
+	XMStoreFloat3(&up, upVector);
+
+	XMFLOAT4X4 rotationMatrix{
+		right.x, right.y, right.z, 0,
+		up.x, up.y, up.z, 0,
+		forward.x, forward.y, forward.z, 0,
+		cameraPosition.x, cameraPosition.y, cameraPosition.z, 1
+	};
+
+	//const auto yAxis = (forward.x - right.z) / sqrt(powf((up.z - forward.y), 2.f) + powf((forward.x - right.z), 2.f) + powf((right.y - up.x), 2.f));
+	auto rot = XMQuaternionRotationMatrix(XMLoadFloat4x4(&rotationMatrix));
+
+	// A lerp function
+	m_CurrentCameraRotation = XMVectorLerp(m_CurrentCameraRotation, rot, m_SceneContext.pGameTime->GetElapsed() * 2);
+
+	const auto pCameraTransform = m_pCamera->GetTransform();
+	pCameraTransform->Rotate(m_CurrentCameraRotation);
 }

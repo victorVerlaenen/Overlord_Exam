@@ -36,7 +36,7 @@ struct PlayerDesc
 class Player : public GameObject
 {
 public:
-	Player(const PlayerDesc& characterDesc, bool isTeamOne = true);
+	Player(const PlayerDesc& characterDesc, float radius);
 	~Player() override = default;
 
 	Player(const Player& other) = delete;
@@ -47,12 +47,9 @@ public:
 	void DrawImGui();
 
 	void SetActive(bool value);
-	void SetOrb(Orb* pOrb) { m_pOrb = pOrb; }
-	bool HasOrb() const;
-	bool IsTeamOne() const;
-
-	static std::vector<Player*> m_pTeam01;
-	static std::vector<Player*> m_pTeam02;
+	void SetHasOrb(bool value) { m_HasOrb = value; }
+	bool HasOrb() const { return m_HasOrb; }
+	
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
@@ -74,11 +71,12 @@ private:
 	XMFLOAT3 m_TotalVelocity{};						//TotalVelocity with X/Z for Horizontal Movement AND Y for Vertical Movement (fall/jump)
 	XMFLOAT3 m_CurrentDirection{};					//Current/Last Direction based on Camera forward/right (Stored for deacceleration)
 
+	float m_PassingTimer{0};
+
 	bool m_IsActive{ false };
 	float m_CurrentAngle{0};
 	bool m_IsSprinting{ false };
-	Orb* m_pOrb{ nullptr };
-	bool m_IsTeamOne{};
 
-	std::vector<Player*>* m_pTeam{};
+	bool m_HasOrb{ false };
+	float m_AuraRadius{};
 };

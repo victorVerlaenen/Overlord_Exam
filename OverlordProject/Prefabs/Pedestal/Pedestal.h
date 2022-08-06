@@ -5,7 +5,7 @@ class Player;
 class Pedestal : public GameObject
 {
 public:
-	Pedestal(const XMFLOAT2& healthPosition, bool isTeamOne);
+	Pedestal(const XMFLOAT2& healthPosition, const XMFLOAT4& color);
 	~Pedestal() override = default;
 
 	Pedestal(const Pedestal& other) = delete;
@@ -13,6 +13,7 @@ public:
 	Pedestal& operator=(const Pedestal& other) = delete;
 	Pedestal& operator=(Pedestal&& other) noexcept = delete;
 
+	void DrawGui();
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
@@ -25,6 +26,6 @@ private:
 	SpriteFont* m_pFont{};
 	std::wstring m_Text{};
 	XMFLOAT2 m_HealthPosition{};
-
-	bool m_IsTeamOne{};
+	XMFLOAT4 m_FireColor{};
+	ParticleEmitterComponent* m_pFireEmitter{};
 };

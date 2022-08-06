@@ -129,6 +129,7 @@
     <ClCompile Include="Scenes\Week 9\ParticleScene.cpp" />
     <ClCompile Include="Materials\Skybox\SkyboxMaterial.cpp" />
     <ClCompile Include="Prefabs\Skybox.cpp" />
+    <ClCompile Include="Materials\Post\Vignette.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
@@ -190,6 +191,7 @@
     <ClInclude Include="Scenes\Week 9\ParticleScene.h" />
     <ClInclude Include="Materials\Skybox\SkyboxMaterial.h" />
     <ClInclude Include="Prefabs\Skybox.h" />
+    <ClInclude Include="Materials\Post\Vignette.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="Scenes\Week 4\UberMaterialScene.h" />

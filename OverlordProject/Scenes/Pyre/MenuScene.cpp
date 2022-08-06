@@ -7,33 +7,23 @@
 #include "Prefabs/Button/Button.h"
 
 
-MenuScene::MenuScene() :
-	GameScene(L"MenuScene") {}
+MenuScene::MenuScene(bool isPause) :
+	GameScene(L"MenuScene")
+	, m_IsPause(isPause)
+{}
 
 void MenuScene::Initialize()
 {
-	//m_SceneContext.settings.showInfoOverlay = true;
-	//m_SceneContext.settings.drawPhysXDebug = true;
-
 	m_SceneContext.settings.drawGrid = false;
-	m_SceneContext.settings.enableOnGUI = true;
+	m_SceneContext.settings.enableOnGUI = false;
 
 	//Light
 	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 
 	//Sound
 	SoundManager::Get()->GetSystem()->createStream("Resources/Audio/MenuTrack.mp3", FMOD_LOOP_NORMAL, nullptr, &m_pMenuTrack);
-	SoundManager::Get()->GetSystem()->playSound(m_pMenuTrack, nullptr, false, nullptr);
 
 	//Background
-	/*const auto pBackgroundSprite = new GameObject();
-	const auto pBackgroundSpriteComp = pBackgroundSprite->AddComponent(new SpriteComponent(L"Textures/MenuScene/MenuBackground.jpg", { 0.5f,0.5f }, { 1.f,1.f,1.f,.5f }));
-	AddChild(pBackgroundSprite);
-
-	pBackgroundSprite->GetTransform()->Translate(m_SceneContext.windowWidth / 2.f, m_SceneContext.windowHeight / 2.f, .9f);
-	const auto spriteDimension = pBackgroundSpriteComp->GetTextureDimension();
-	const auto scale = 1.f / spriteDimension.y * m_SceneContext.windowHeight;
-	pBackgroundSprite->GetTransform()->Scale(scale, scale, 1.f);*/
 	m_pSkyBox = AddChild(new Skybox());
 
 	//MenuUI
@@ -107,29 +97,14 @@ void MenuScene::Initialize()
 	const auto inputAction = InputAction(Select, InputState::pressed, -1, -1, XINPUT_GAMEPAD_A);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-
-	m_pButtons.emplace_back(AddChild(new Button(L"PLAY", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 40, m_SceneContext.windowHeight / 2 - 110 }, XMFLOAT4{ Colors::White }, XMFLOAT2{ 150.f, 50.f }, Select)));
-	m_pButtons[0]->SetPressedFunction([]()
-		{
-			auto sceneManager = SceneManager::Get();
-			/*auto pScene = SceneManager::Get()->GetScene(L"Crash bandicoot");
-			sceneManager->RemoveGameScene(pScene, true);*/
-			sceneManager->AddGameScene(new PyreScene());
-			sceneManager->SetActiveGameScene(L"PyreScene");
-		});
-	m_pButtons[0]->SetSelected(true);
-
-	m_pButtons.emplace_back(AddChild(new Button(L"ABOUT", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 60, m_SceneContext.windowHeight / 2 - 30 }, XMFLOAT4{ Colors::White }, XMFLOAT2{ 150.f, 50.f }, Select)));
-	m_pButtons[1]->SetPressedFunction([]()
-		{
-			//Go to about scene
-		});
-
-	m_pButtons.emplace_back(AddChild(new Button(L"QUIT", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 45, m_SceneContext.windowHeight / 2 + 40 }, XMFLOAT4{ Colors::White }, XMFLOAT2{ 150.f, 50.f }, Select)));
-	m_pButtons[2]->SetPressedFunction([]()
-		{
-			//Quit game
-		});
+	if (m_IsPause == false)
+	{
+		AddMainMenuButtons();
+	}
+	else
+	{
+		AddPauseButtons();
+	}
 }
 
 void MenuScene::Update()
@@ -198,5 +173,63 @@ void MenuScene::Draw()
 
 void MenuScene::OnGUI()
 {
-	//m_pBookMaterial->DrawImGui();
+
+}
+
+void MenuScene::OnSceneActivated()
+{
+	SoundManager::Get()->GetSystem()->playSound(m_pMenuTrack, nullptr, false, nullptr);
+}
+
+void MenuScene::OnSceneDeactivated()
+{
+
+	SoundManager::Get()->GetSystem()->playSound(m_pMenuTrack, nullptr, true, nullptr);
+}
+
+void MenuScene::AddPauseButtons()
+{
+	m_pButtons.emplace_back(AddChild(new Button(L"RESTART", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 40, m_SceneContext.windowHeight / 2 - 110 }, XMFLOAT4{ Colors::White }, Select)));
+	m_pButtons[0]->SetPressedFunction([]()
+		{
+			const auto pSceneManager = SceneManager::Get();
+			pSceneManager->PreviousScene();
+		});
+	m_pButtons[0]->SetSelected(true);
+
+	m_pButtons.emplace_back(AddChild(new Button(L"MAIN MENU", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 60, m_SceneContext.windowHeight / 2 - 30 }, XMFLOAT4{ Colors::White }, Select)));
+	m_pButtons[1]->SetPressedFunction([]()
+		{
+			const auto pSceneManager = SceneManager::Get();
+			pSceneManager->NextScene();
+		});
+
+	m_pButtons.emplace_back(AddChild(new Button(L"QUIT", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 45, m_SceneContext.windowHeight / 2 + 40 }, XMFLOAT4{ Colors::White }, Select)));
+	m_pButtons[2]->SetPressedFunction([]()
+		{
+			PostQuitMessage(0);
+		});
+}
+
+void MenuScene::AddMainMenuButtons()
+{
+	m_pButtons.emplace_back(AddChild(new Button(L"PLAY", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 40, m_SceneContext.windowHeight / 2 - 110 }, XMFLOAT4{ Colors::White }, Select)));
+	m_pButtons[0]->SetPressedFunction([]()
+		{
+			const auto pSceneManager = SceneManager::Get();
+			pSceneManager->NextScene();
+		});
+	m_pButtons[0]->SetSelected(true);
+
+	m_pButtons.emplace_back(AddChild(new Button(L"ABOUT", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 60, m_SceneContext.windowHeight / 2 - 30 }, XMFLOAT4{ Colors::White }, Select)));
+	m_pButtons[1]->SetPressedFunction([]()
+		{
+			//Go to about scene
+		});
+
+	m_pButtons.emplace_back(AddChild(new Button(L"QUIT", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 45, m_SceneContext.windowHeight / 2 + 40 }, XMFLOAT4{ Colors::White }, Select)));
+	m_pButtons[2]->SetPressedFunction([]()
+		{
+			PostQuitMessage(0);
+		});
 }

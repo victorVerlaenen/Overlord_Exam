@@ -43,6 +43,7 @@
     <ClCompile Include="Prefabs\Pedestal\Pedestal.cpp" />
     <ClCompile Include="Prefabs\CharacterHUD\CharacterHUD.cpp" />
     <ClCompile Include="Prefabs\Team\Team.cpp" />
+    <ClCompile Include="Materials\Post\Vignette.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -86,5 +87,6 @@
     <ClInclude Include="Prefabs\Pedestal\Pedestal.h" />
     <ClInclude Include="Prefabs\CharacterHUD\CharacterHUD.h" />
     <ClInclude Include="Prefabs\Team\Team.h" />
+    <ClInclude Include="Materials\Post\Vignette.h" />
   </ItemGroup>
 </Project>

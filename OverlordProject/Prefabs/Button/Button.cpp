@@ -1,12 +1,11 @@
 #include "stdafx.h"
 #include "Button.h"
 
-Button::Button(const std::wstring& text, XMFLOAT2 position, XMFLOAT4 color, XMFLOAT2 bounds, int actionIdSelect)
+Button::Button(const std::wstring& text, XMFLOAT2 position, XMFLOAT4 color, int actionIdSelect)
 	: m_pFont{ ContentManager::Load<SpriteFont>(L"SpriteFonts/Nightwarrior_64.fnt") }
 	, m_Text{ text }
 	, m_Position{ position }
 	, m_Color{ color }
-	, m_Bounds{ bounds }
 	, m_ActionIdSelect(actionIdSelect)
 {
 

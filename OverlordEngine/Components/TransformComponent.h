@@ -39,6 +39,10 @@ public:
 	const XMFLOAT3& GetUp() const { return m_Up; }
 	const XMFLOAT3& GetRight() const { return m_Right; }
 
+	void SetForward(const XMFLOAT3& forward) { m_Forward = forward; }
+	void SetUp(const XMFLOAT3& up) {m_Up = up; }
+	void SetRight(const XMFLOAT3& right) { m_Right = right; }
+
 	bool IsDirty() const { return m_IsDirty; }
 	void SetRigidBodyComponent(RigidBodyComponent* pRigidBody) { m_pRigidBodyComponent = pRigidBody; }
 	void SetControllerComponent(ControllerComponent* pController) { m_pControllerComponent = pController; }

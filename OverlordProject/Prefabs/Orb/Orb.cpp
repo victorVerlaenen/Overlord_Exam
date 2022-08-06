@@ -19,7 +19,7 @@ void Orb::Initialize(const SceneContext& /*sceneContext*/)
 	pOrbActor->AddCollider(PxSphereGeometry(.1f), *pDefaultMaterial, false);
 	pOrbActor->AddCollider(PxSphereGeometry(.8f), *pDefaultMaterial, true);
 	SetOnTriggerCallBack(std::bind(&Orb::PickUpBall, this, std::placeholders::_2, std::placeholders::_3));
-	
+
 	const auto pOrbMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
 	pOrbMaterial->SetDiffuseTexture(L"Textures/Orb/Orb_albedo.jpg");
 	pOrbMaterial->SetSpecularTexture(L"Textures/Orb/Orb_roughness.jpg");
@@ -31,13 +31,13 @@ void Orb::Initialize(const SceneContext& /*sceneContext*/)
 
 void Orb::Update(const SceneContext& /*sceneContext*/)
 {
-	if(m_pPlayerPickedUp != nullptr && m_IsPickedUp == true)
+	if (m_pPlayerPickedUp != nullptr && m_IsPickedUp == true)
 	{
-		//this->GetScene()->RemoveChild(this);
-		//m_pPlayerPickedUp->AddChild(this);
-		//GetComponent<RigidBodyComponent>()->SetKinematic(true);
-		GetTransform()->Translate(XMFLOAT3{m_pPlayerPickedUp->GetTransform()->GetPosition().x, m_pPlayerPickedUp->GetTransform()->GetPosition().y + 2.5f ,m_pPlayerPickedUp->GetTransform()->GetPosition().z});
-		//m_pPlayerPickedUp = nullptr;
+		GetTransform()->Translate(XMFLOAT3{
+			m_pPlayerPickedUp->GetTransform()->GetPosition().x,
+			m_pPlayerPickedUp->GetTransform()->GetPosition().y + 2.5f ,
+			m_pPlayerPickedUp->GetTransform()->GetPosition().z
+			});
 	}
 }
 
@@ -48,7 +48,7 @@ void Orb::PickUpBall(GameObject* pPlayerObject, PxTriggerAction triggerAction)
 		if (triggerAction == PxTriggerAction::ENTER)
 		{
 			m_pPlayerPickedUp = dynamic_cast<Player*>(pPlayerObject);
-			m_pPlayerPickedUp->SetOrb(this);
+			m_pPlayerPickedUp->SetHasOrb(true);
 			m_IsPickedUp = true;
 		}
 	}

@@ -22,6 +22,8 @@ void MenuScene::Initialize()
 
 	//Sound
 	SoundManager::Get()->GetSystem()->createStream("Resources/Audio/MenuTrack.mp3", FMOD_LOOP_NORMAL, nullptr, &m_pMenuTrack);
+	SoundManager::Get()->GetSystem()->playSound(m_pMenuTrack, nullptr, true, &m_pChannel2D);
+	m_pChannel2D->setVolume(.1f);
 
 	//Background
 	m_pSkyBox = AddChild(new Skybox());
@@ -178,34 +180,51 @@ void MenuScene::OnGUI()
 
 void MenuScene::OnSceneActivated()
 {
-	SoundManager::Get()->GetSystem()->playSound(m_pMenuTrack, nullptr, false, nullptr);
+	m_pChannel2D->setPaused(false);
 }
 
 void MenuScene::OnSceneDeactivated()
 {
+	m_pChannel2D->setPaused(true);
 
-	SoundManager::Get()->GetSystem()->playSound(m_pMenuTrack, nullptr, true, nullptr);
+	const auto pSceneManager = SceneManager::Get();
+	const auto pThisScene = static_cast<GameScene*>(this);
+	pSceneManager->RemoveGameScene(pThisScene, true);
 }
 
 void MenuScene::AddPauseButtons()
 {
-	m_pButtons.emplace_back(AddChild(new Button(L"RESTART", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 40, m_SceneContext.windowHeight / 2 - 110 }, XMFLOAT4{ Colors::White }, Select)));
+	m_pButtons.emplace_back(AddChild(new Button(L"CONTINUE", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 90, m_SceneContext.windowHeight / 2 - 140 }, XMFLOAT4{ Colors::White }, Select)));
 	m_pButtons[0]->SetPressedFunction([]()
 		{
 			const auto pSceneManager = SceneManager::Get();
-			pSceneManager->PreviousScene();
+			pSceneManager->SetActiveGameScene(L"PyreScene");
 		});
 	m_pButtons[0]->SetSelected(true);
 
-	m_pButtons.emplace_back(AddChild(new Button(L"MAIN MENU", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 60, m_SceneContext.windowHeight / 2 - 30 }, XMFLOAT4{ Colors::White }, Select)));
+	m_pButtons.emplace_back(AddChild(new Button(L"RESTART", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 80, m_SceneContext.windowHeight / 2 - 70 }, XMFLOAT4{ Colors::White }, Select)));
 	m_pButtons[1]->SetPressedFunction([]()
 		{
 			const auto pSceneManager = SceneManager::Get();
+			//pSceneManager->PreviousScene();
+			const auto pPyreScene = pSceneManager->GetScene(L"PyreScene");
+			pSceneManager->RemoveGameScene(pPyreScene, true);
+			pSceneManager->AddGameScene(new PyreScene());
+			pSceneManager->SetActiveGameScene(L"PyreScene");
+		});
+
+	m_pButtons.emplace_back(AddChild(new Button(L"MAIN MENU", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 110, m_SceneContext.windowHeight / 2 }, XMFLOAT4{ Colors::White }, Select)));
+	m_pButtons[2]->SetPressedFunction([]()
+		{
+			const auto pSceneManager = SceneManager::Get();
+			const auto pPyreScene = pSceneManager->GetScene(L"PyreScene");
+			pSceneManager->RemoveGameScene(pPyreScene, true);
+			pSceneManager->AddGameScene(new MenuScene());
 			pSceneManager->NextScene();
 		});
 
-	m_pButtons.emplace_back(AddChild(new Button(L"QUIT", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 45, m_SceneContext.windowHeight / 2 + 40 }, XMFLOAT4{ Colors::White }, Select)));
-	m_pButtons[2]->SetPressedFunction([]()
+	m_pButtons.emplace_back(AddChild(new Button(L"QUIT", XMFLOAT2{ m_SceneContext.windowWidth / 2 - 45, m_SceneContext.windowHeight / 2 + 70 }, XMFLOAT4{ Colors::White }, Select)));
+	m_pButtons[3]->SetPressedFunction([]()
 		{
 			PostQuitMessage(0);
 		});
@@ -217,7 +236,8 @@ void MenuScene::AddMainMenuButtons()
 	m_pButtons[0]->SetPressedFunction([]()
 		{
 			const auto pSceneManager = SceneManager::Get();
-			pSceneManager->NextScene();
+			pSceneManager->AddGameScene(new PyreScene());
+			pSceneManager->SetActiveGameScene(L"PyreScene");
 		});
 	m_pButtons[0]->SetSelected(true);
 

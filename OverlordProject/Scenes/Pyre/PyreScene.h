@@ -15,7 +15,7 @@ public:
 	PyreScene& operator=(const PyreScene& other) = delete;
 	PyreScene& operator=(PyreScene&& other) noexcept = delete;
 
-	void GoalReset() const;
+	void GoalReset(Player* pScoredPlayer = nullptr) const;
 
 protected:
 	void Initialize() override;
@@ -57,6 +57,7 @@ private:
 	XMFLOAT3 m_ControlsPosition{ };
 
 	FMOD::Sound* m_pGameTrack{};
+	FMOD::Channel* m_pChannel2D{};
 	//float m_ShadowMapScale{ 0.3f };
 	//bool m_DrawShadowMap{ false };
 	//GameObject* m_pSmallRock;

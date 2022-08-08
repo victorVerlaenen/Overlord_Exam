@@ -30,12 +30,17 @@ public:
 
 	GameObject* Pick(CollisionGroup ignoreGroups = CollisionGroup::None) const;
 
+	void StartScreenShake(float amount, float duration);
+
 protected:
 
 	void Initialize(const SceneContext& /*sceneContext*/) override {};
 	void Update(const SceneContext& sceneContext) override;
 
 private:
+	XMFLOAT3 GetScreenShakeOffset() const;
+	void UpdateScreenShake(const SceneContext& sceneContext);
+
 	XMFLOAT4X4 m_View{};
 	XMFLOAT4X4 m_Projection{};
 	XMFLOAT4X4 m_ViewInverse{};
@@ -44,5 +49,9 @@ private:
 
 	float m_FarPlane{}, m_NearPlane{}, m_FOV{}, m_Size{};
 	bool m_IsActive{}, m_PerspectiveProjection{};
+
+	bool m_DoScreenShake{ false };
+	float m_ScreenShakeRadius{}, m_ScreenShakeAngle{}, m_ScreenShakeOffset{}, m_ScreenShakeDuration{}, m_ScreenShakeTimer{};
+	XMFLOAT3 m_ScreenShakeResetPoint{};
 };
 

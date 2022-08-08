@@ -72,6 +72,7 @@ private:
 	XMFLOAT3 m_CurrentDirection{};					//Current/Last Direction based on Camera forward/right (Stored for deacceleration)
 
 	float m_PassingTimer{0};
+	FMOD::Sound* m_pPassSound{};
 
 	bool m_IsActive{ false };
 	float m_CurrentAngle{0};
@@ -79,4 +80,11 @@ private:
 
 	bool m_HasOrb{ false };
 	float m_AuraRadius{};
+
+	float m_RunEnergy{100};
+	ParticleEmitterComponent* m_pRunningParticle{};
+	FMOD::Sound* m_pStepSound{};
+	static FMOD::ChannelGroup* m_pSoundsGroup;
+	const float m_StepInterval{ 0.1f };
+	float m_StepCounter{ m_StepInterval };
 };

@@ -5,15 +5,13 @@
 #include "Prefabs/Orb/Orb.h"
 #include "Prefabs/Pedestal/Pedestal.h"
 
-int Team::m_NumberOfTeams = 1;
-
-Team::Team(Orb* pOrb,const std::wstring& teamTexturePath,const std::wstring& teamAuraTexturePath)
+Team::Team(int teamNumber, Orb* pOrb,const std::wstring& teamTexturePath,const std::wstring& teamAuraTexturePath)
 	:m_pOrb(pOrb)
 	, m_TeamTexturePath(teamTexturePath)
 	, m_TeamAuraTexturePath(teamAuraTexturePath)
-	, m_TeamNumber(m_NumberOfTeams)
+	, m_TeamNumber(teamNumber)
 {
-	m_NumberOfTeams++;
+	
 }
 
 void Team::AddPlayer(Player* pNewPlayer, const XMFLOAT3& position, bool isActive)
@@ -59,7 +57,7 @@ void Team::PassToNextPlayer()
 {
 	m_pPlayers[m_ActivePlayer]->SetActive(false);
 	m_pPlayers[m_ActivePlayer]->SetHasOrb(false);
-	if (m_ActivePlayer == 2)
+	if (m_ActivePlayer == m_pPlayers.size()-1)
 	{
 		m_ActivePlayer = 0;
 	}
@@ -80,7 +78,7 @@ void Team::PassToPreviousPlayer()
 	m_pPlayers[m_ActivePlayer]->SetHasOrb(false);
 	if (m_ActivePlayer == 0)
 	{
-		m_ActivePlayer = 2;
+		m_ActivePlayer = m_pPlayers.size() - 1;
 	}
 	else
 	{
@@ -96,7 +94,7 @@ void Team::PassToPreviousPlayer()
 void Team::ActiveNextPlayer()
 {
 	m_pPlayers[m_ActivePlayer]->SetActive(false);
-	if (m_ActivePlayer == 2)
+	if (m_ActivePlayer == m_pPlayers.size() - 1)
 	{
 		m_ActivePlayer = 0;
 	}
@@ -114,7 +112,7 @@ void Team::ActivePreviousPlayer()
 	m_pPlayers[m_ActivePlayer]->SetActive(false);
 	if (m_ActivePlayer == 0)
 	{
-		m_ActivePlayer = 2;
+		m_ActivePlayer = m_pPlayers.size() - 1;
 	}
 	else
 	{
@@ -125,13 +123,22 @@ void Team::ActivePreviousPlayer()
 	m_pCharacterHUD->PreviousPlayerActivate();
 }
 
-void Team::ResetTeam() const
+void Team::ResetTeam(Player* pScoredPlayer) 
 {
 	for (int i{}; i < m_pPlayers.size(); ++i)
 	{
-		//m_pPlayers[i]->SetActive(false);
 		m_pPlayers[i]->GetTransform()->Translate(m_ResetPositions[i]);
+		m_pPlayers[i]->SetHasOrb(false);
+		m_pPlayers[i]->SetActive(false);
 	}
+
+	if (pScoredPlayer->GetParent() == this)
+	{
+		m_pBanishedPlayer = pScoredPlayer;
+		m_pPlayers.erase(std::ranges::remove(m_pPlayers, m_pBanishedPlayer).begin(), m_pPlayers.end());
+		RemoveChild(m_pBanishedPlayer);
+	}
+	m_pPlayers[0]->SetActive(true);
 }
 
 const XMFLOAT3& Team::GetActivePlayerPosition() const

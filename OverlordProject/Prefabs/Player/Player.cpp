@@ -7,6 +7,8 @@
 #include "Prefabs/Orb/Orb.h"
 #include "Prefabs/Team/Team.h"
 
+FMOD::ChannelGroup* Player::m_pSoundsGroup{ nullptr };
+
 Player::Player(const PlayerDesc& characterDesc, float radius) :
 	m_PlayerDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
@@ -23,7 +25,16 @@ void Player::Initialize(const SceneContext& /*sceneContext*/)
 	//const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 	//Controller
 	m_pControllerComponent = AddComponent(new ControllerComponent(m_PlayerDesc.controller));
-	m_pControllerComponent->SetCollisionGroup(CollisionGroup::Group0);
+
+	//Sound
+	SoundManager::Get()->GetSystem()->createStream("Resources/Audio/Step.ogg", FMOD_DEFAULT, nullptr, &m_pStepSound);
+	SoundManager::Get()->GetSystem()->createStream("Resources/Audio/Pass.wav", FMOD_DEFAULT, nullptr, &m_pPassSound);
+
+	if (m_pSoundsGroup == nullptr)
+	{
+		SoundManager::Get()->GetSystem()->createChannelGroup("Sounds", &m_pSoundsGroup);
+		m_pSoundsGroup->setVolume(1.f);
+	}
 
 	//Player
 	m_pCharacterObject = AddChild(new GameObject());
@@ -50,10 +61,28 @@ void Player::Initialize(const SceneContext& /*sceneContext*/)
 	const auto pAuraMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial>();
 	pAuraMaterial->SetDiffuseTexture(static_cast<Team*>(GetParent())->GetAuraTexturePath());
 	pModel->SetMaterial(pAuraMaterial);
+
+	//Particle System
+	ParticleEmitterSettings settings{};
+	settings.velocity = { 0.f,0.f,0.f };
+	settings.minSize = .1f;
+	settings.maxSize = .2f;
+	settings.minEnergy = .5f;
+	settings.maxEnergy = 1.f;
+	settings.minScale = -.1f;
+	settings.maxScale = -.2f;
+	settings.minEmitterRadius = .2f;
+	settings.maxEmitterRadius = .2f;
+	settings.color = { 1,1,1, .6f };
+
+	const auto pObject = AddChild(new GameObject);
+	m_pRunningParticle = pObject->AddComponent(new ParticleEmitterComponent(L"Textures/Smoke.png", settings, 200));
+	m_pRunningParticle->SetActive(false);
 }
 
 void Player::Update(const SceneContext& sceneContext)
 {
+	m_pRunningParticle->GetTransform()->Translate(m_pControllerComponent->GetFootPosition());
 	if (m_pAnimator->GetClipName() == L"Passing")
 	{
 		m_PassingTimer += sceneContext.pGameTime->GetElapsed();
@@ -80,8 +109,10 @@ void Player::Update(const SceneContext& sceneContext)
 		//Check for pass input
 		if (sceneContext.pInput->IsActionTriggered(m_PlayerDesc.actionId_PassNext))
 		{
+			sceneContext.pCamera->StartScreenShake(.2f, .15f);
 			if (HasOrb())
 			{
+				SoundManager::Get()->GetSystem()->playSound(m_pPassSound, m_pSoundsGroup, false, nullptr);
 				m_pAnimator->SetAnimation(L"Passing");
 				pTeam->PassToNextPlayer();
 			}
@@ -98,8 +129,10 @@ void Player::Update(const SceneContext& sceneContext)
 		//Idem above
 		if (sceneContext.pInput->IsActionTriggered(m_PlayerDesc.actionId_PassPrevious))
 		{
+			sceneContext.pCamera->StartScreenShake(.2f, .15f);
 			if (HasOrb())
 			{
+				SoundManager::Get()->GetSystem()->playSound(m_pPassSound, m_pSoundsGroup, false, nullptr);
 				m_pAnimator->SetAnimation(L"Passing");
 				pTeam->PassToPreviousPlayer();
 			}
@@ -114,6 +147,7 @@ void Player::Update(const SceneContext& sceneContext)
 			return;
 		}
 
+
 		constexpr float epsilon{ 0.01f }; //Constant that can be used to compare if a float is near zero
 		bool isMoving{ false };
 
@@ -126,14 +160,30 @@ void Player::Update(const SceneContext& sceneContext)
 
 		if (triggerPressure > epsilon)
 		{
-			m_PlayerDesc.maxMoveSpeed = m_SprintingSpeed;
-			m_IsSprinting = true;
+			if (m_RunEnergy > 0)
+			{
+				m_PlayerDesc.maxMoveSpeed = m_SprintingSpeed;
+				m_IsSprinting = true;
+			}
+			else
+			{
+				m_PlayerDesc.maxMoveSpeed = m_RunningSpeed;
+				m_IsSprinting = false;
+
+			}
+			m_RunEnergy -= 30 * sceneContext.pGameTime->GetElapsed();
 		}
 		else
 		{
 			m_PlayerDesc.maxMoveSpeed = m_RunningSpeed;
 			m_IsSprinting = false;
+			m_RunEnergy += 30 * sceneContext.pGameTime->GetElapsed();
 		}
+		m_RunEnergy = std::clamp(m_RunEnergy, 0.f, 100.f);
+		/*if(m_RunEnergy != 0 && m_RunEnergy != 100)
+		{
+			std::cout << m_RunEnergy << std::endl;
+		}*/
 
 		//## Input Gathering (move)
 		XMFLOAT2 move{ 0,0 }; //Uncomment
@@ -153,6 +203,24 @@ void Player::Update(const SceneContext& sceneContext)
 		{
 			isMoving = true;
 		}
+
+		//************************
+		//sprinting feedback
+		if (isMoving && m_IsSprinting)
+		{
+			m_StepCounter += sceneContext.pGameTime->GetElapsed();
+			if (m_StepCounter >= m_StepInterval)
+			{
+				SoundManager::Get()->GetSystem()->playSound(m_pStepSound, m_pSoundsGroup, false, nullptr);
+				m_StepCounter = 0;
+			}
+			m_pRunningParticle->SetActive(true);
+		}
+		else
+		{
+			m_pRunningParticle->SetActive(false);
+		}
+
 		//************************
 		//GATHERING TRANSFORM INFO
 

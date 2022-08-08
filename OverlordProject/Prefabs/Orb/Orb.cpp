@@ -27,17 +27,21 @@ void Orb::Initialize(const SceneContext& /*sceneContext*/)
 	pOrbMaterial->SetEnvironmentTexture(L"Textures/Skybox.dds");
 
 	pOrbMesh->SetMaterial(pOrbMaterial);
+	m_CurrentOrbPosition = GetTransform()->GetPosition();
 }
 
-void Orb::Update(const SceneContext& /*sceneContext*/)
+void Orb::Update(const SceneContext& sceneContext)
 {
 	if (m_pPlayerPickedUp != nullptr && m_IsPickedUp == true)
 	{
-		GetTransform()->Translate(XMFLOAT3{
-			m_pPlayerPickedUp->GetTransform()->GetPosition().x,
+
+		const XMFLOAT3 targetPosition{ m_pPlayerPickedUp->GetTransform()->GetPosition().x,
 			m_pPlayerPickedUp->GetTransform()->GetPosition().y + 2.5f ,
-			m_pPlayerPickedUp->GetTransform()->GetPosition().z
-			});
+			m_pPlayerPickedUp->GetTransform()->GetPosition().z };
+
+		XMStoreFloat3(&m_CurrentOrbPosition, XMVectorLerp(XMLoadFloat3(&m_CurrentOrbPosition), XMLoadFloat3(&targetPosition), sceneContext.pGameTime->GetElapsed() * 8.f));
+		
+		GetTransform()->Translate(m_CurrentOrbPosition);
 	}
 }
 

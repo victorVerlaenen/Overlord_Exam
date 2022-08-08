@@ -7,7 +7,7 @@ class Player;
 class Team : public GameObject
 {
 public:
-	Team(Orb* pOrb,const std::wstring& teamTexturePath,const std::wstring& teamAuraTexturePath);
+	Team(int teamNumber, Orb* pOrb,const std::wstring& teamTexturePath,const std::wstring& teamAuraTexturePath);
 	~Team() override = default;
 
 	Team(const Team& other) = delete;
@@ -31,7 +31,7 @@ public:
 
 	int GetTeamNumber() const { return m_TeamNumber; }
 
-	void ResetTeam() const;
+	void ResetTeam(Player* pScoredPlayer = nullptr);
 
 	const XMFLOAT3& GetActivePlayerPosition() const;
 protected:
@@ -42,7 +42,7 @@ protected:
 private:
 	std::vector<Player*> m_pPlayers{};
 	Player* m_pBanishedPlayer{};
-	int m_ActivePlayer{};
+	size_t m_ActivePlayer{};
 
 	std::vector<XMFLOAT3> m_ResetPositions{};
 
@@ -55,6 +55,5 @@ private:
 	bool m_JustPassed{ false };
 
 	int m_TeamNumber{};
-	static int m_NumberOfTeams;
 };
 

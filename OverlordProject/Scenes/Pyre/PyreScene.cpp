@@ -19,10 +19,10 @@ PyreScene::PyreScene()
 
 }
 
-void PyreScene::GoalReset() const
+void PyreScene::GoalReset(Player* pScoredPlayer) const
 {
-	m_pTeam_01->ResetTeam();
-	m_pTeam_02->ResetTeam();
+	m_pTeam_01->ResetTeam(pScoredPlayer);
+	m_pTeam_02->ResetTeam(pScoredPlayer);
 
 	m_pOrb->GetTransform()->Translate(0, 4, 0);
 	m_pOrb->SetIsPickedUp(false);
@@ -38,6 +38,8 @@ void PyreScene::Initialize()
 
 	//Sound
 	SoundManager::Get()->GetSystem()->createStream("Resources/Audio/GameTrack.mp3", FMOD_LOOP_NORMAL, nullptr, &m_pGameTrack);
+	SoundManager::Get()->GetSystem()->playSound(m_pGameTrack, nullptr, true, &m_pChannel2D);
+	m_pChannel2D->setVolume(.1f);
 	
 	//physics Ground Plane
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
@@ -82,7 +84,8 @@ void PyreScene::Update()
 	if (m_SceneContext.pInput->IsActionTriggered(Pause))
 	{
 		const auto pSceneManager = SceneManager::Get();
-		pSceneManager->NextScene();
+		pSceneManager->AddGameScene(new MenuScene(true));
+		pSceneManager->SetActiveGameScene(L"MenuScene");
 	}
 }
 
@@ -96,12 +99,12 @@ void PyreScene::Draw()
 
 void PyreScene::OnSceneActivated()
 {
-	SoundManager::Get()->GetSystem()->playSound(m_pGameTrack, nullptr, false, nullptr);
+	m_pChannel2D->setPaused(false);
 }
 
 void PyreScene::OnSceneDeactivated()
 {
-	SoundManager::Get()->GetSystem()->playSound(m_pGameTrack, nullptr, true, nullptr);
+	m_pChannel2D->setPaused(true);
 }
 
 void PyreScene::AddTeams()
@@ -109,7 +112,7 @@ void PyreScene::AddTeams()
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 
 	// TEAM 1
-	m_pTeam_01 = AddChild(new Team(m_pOrb, L"Textures/Mouse_albedo_blue.jpg", L"Textures/Aura.png"));
+	m_pTeam_01 = AddChild(new Team(1, m_pOrb, L"Textures/Mouse_albedo_blue.jpg", L"Textures/Aura.png"));
 	//Characters
 	PlayerDesc playerDesc{ pDefaultMaterial };
 	playerDesc.actionId_Jump = Player01Jump;
@@ -133,7 +136,7 @@ void PyreScene::AddTeams()
 
 
 	// TEAM 2
-	m_pTeam_02 = AddChild(new Team(m_pOrb, L"Textures/Mouse_albedo_red.jpg", L"Textures/Aura_red.png"));
+	m_pTeam_02 = AddChild(new Team(2, m_pOrb, L"Textures/Mouse_albedo_red.jpg", L"Textures/Aura_red.png"));
 	//Characters
 	playerDesc.actionId_Jump = Player02Jump;
 	playerDesc.actionId_PassNext = Player02PassNext;
@@ -369,7 +372,6 @@ void PyreScene::UpdateCamera()
 	//const auto yAxis = (forward.x - right.z) / sqrt(powf((up.z - forward.y), 2.f) + powf((forward.x - right.z), 2.f) + powf((right.y - up.x), 2.f));
 	auto rot = XMQuaternionRotationMatrix(XMLoadFloat4x4(&rotationMatrix));
 
-	// A lerp function
 	m_CurrentCameraRotation = XMVectorLerp(m_CurrentCameraRotation, rot, m_SceneContext.pGameTime->GetElapsed() * 2);
 
 	const auto pCameraTransform = m_pCamera->GetTransform();

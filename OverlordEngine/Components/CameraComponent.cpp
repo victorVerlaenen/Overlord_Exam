@@ -46,6 +46,8 @@ void CameraComponent::Update(const SceneContext& sceneContext)
 	XMStoreFloat4x4(&m_ViewInverse, viewInv);
 	XMStoreFloat4x4(&m_ViewProjection, view * projection);
 	XMStoreFloat4x4(&m_ViewProjectionInverse, viewProjectionInv);
+
+	UpdateScreenShake(sceneContext);
 }
 
 void CameraComponent::SetActive(bool active)
@@ -102,4 +104,47 @@ GameObject* CameraComponent::Pick(CollisionGroup ignoreGroups) const
 	}
 
 	return nullptr;
+}
+
+void CameraComponent::UpdateScreenShake(const SceneContext& sceneContext)
+{
+	if (m_DoScreenShake == true)
+	{
+		m_ScreenShakeTimer += sceneContext.pGameTime->GetElapsed();
+		if(m_ScreenShakeTimer >= m_ScreenShakeDuration)
+		{
+			m_DoScreenShake = false;
+			GetTransform()->Translate(m_ScreenShakeResetPoint);
+			return;
+		}
+
+		m_ScreenShakeAngle += 150 + rand() % 60;
+
+		GetTransform()->Translate(m_ScreenShakeResetPoint.x + GetScreenShakeOffset().x, m_ScreenShakeResetPoint.y + GetScreenShakeOffset().y, m_ScreenShakeResetPoint.z + GetScreenShakeOffset().z);
+	}
+}
+
+XMFLOAT3 CameraComponent::GetScreenShakeOffset() const
+{
+	const auto up{ GetTransform()->GetUp() };
+	const auto right{ GetTransform()->GetRight() };
+	const XMFLOAT2 offset2D = { sinf(m_ScreenShakeAngle) * m_ScreenShakeRadius, cosf(m_ScreenShakeAngle) * m_ScreenShakeRadius };
+	const auto rightOffset{ XMLoadFloat3(&right) * offset2D.x };
+	const auto upOffset{ XMLoadFloat3(&up) * offset2D.y };
+	XMFLOAT3 realOffset{};
+	XMStoreFloat3(&realOffset, rightOffset + upOffset);
+
+	return realOffset;
+}
+
+void CameraComponent::StartScreenShake(float amount, float duration)
+{
+	m_ScreenShakeTimer = 0;
+	m_ScreenShakeRadius = amount;
+	m_ScreenShakeDuration = duration;
+	m_ScreenShakeResetPoint = GetTransform()->GetPosition();
+	m_ScreenShakeAngle = static_cast<float>(rand() % 360);
+
+	GetTransform()->Translate(m_ScreenShakeResetPoint.x + GetScreenShakeOffset().x, m_ScreenShakeResetPoint.y + GetScreenShakeOffset().y, m_ScreenShakeResetPoint.z + GetScreenShakeOffset().z);
+	m_DoScreenShake = true;
 }

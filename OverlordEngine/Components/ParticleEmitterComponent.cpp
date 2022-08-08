@@ -62,6 +62,7 @@ void ParticleEmitterComponent::CreateVertexBuffer(const SceneContext& sceneConte
 
 void ParticleEmitterComponent::Update(const SceneContext& sceneContext)
 {
+	
 	TODO_W9(L"Implement Update");
 	const float elapsedTime = sceneContext.pGameTime->GetElapsed();
 
@@ -90,7 +91,7 @@ void ParticleEmitterComponent::Update(const SceneContext& sceneContext)
 			UpdateParticle(m_ParticlesArray[i], elapsedTime);
 		}
 		//2. If the particle is NOT Active(do not use ‘else if’), and the value of m_LastParticleInit is bigger than or equal to particleInterval
-		if (m_ParticlesArray[i].isActive == false && m_LastParticleSpawn >= particleInterval)
+		if (m_ParticlesArray[i].isActive == false && m_LastParticleSpawn >= particleInterval && m_IsActive == true)
 		{
 			//> Call SpawnParticle
 			SpawnParticle(m_ParticlesArray[i]);

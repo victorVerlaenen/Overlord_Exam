@@ -24,5 +24,6 @@ private:
 
 	bool m_IsPickedUp{ false };
 	Player* m_pPlayerPickedUp{ nullptr };
+	XMFLOAT3 m_CurrentOrbPosition{};
 };
 

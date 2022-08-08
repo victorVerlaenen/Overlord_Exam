@@ -8,7 +8,8 @@ public:
 	FixedCamera(FixedCamera&& other) noexcept = delete;
 	FixedCamera& operator=(const FixedCamera& other) = delete;
 	FixedCamera& operator=(FixedCamera&& other) noexcept = delete;
-
+	
 protected:
 	void Initialize(const SceneContext& sceneContext) override;
+
 };

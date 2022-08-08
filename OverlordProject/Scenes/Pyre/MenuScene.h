@@ -41,5 +41,7 @@ private:
 	const float m_NavigationCooldown{ 0.2f };
 
 	FMOD::Sound* m_pMenuTrack{};
+	FMOD::Channel* m_pChannel2D{};
+
 	bool m_IsPause{};
 };

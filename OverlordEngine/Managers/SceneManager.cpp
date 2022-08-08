@@ -35,6 +35,7 @@ void SceneManager::AddGameScene(GameScene* pScene)
 		if (m_ActiveScene == nullptr && m_NewActiveScene == nullptr)
 			m_NewActiveScene = pScene;
 	}
+	std::cout << "scene added, " << m_pScenes.size() << " scenes total" << std::endl;
 }
 
 void SceneManager::RemoveGameScene(GameScene* pScene, bool deleteObject)
@@ -49,6 +50,7 @@ void SceneManager::RemoveGameScene(GameScene* pScene, bool deleteObject)
 			SafeDelete(pScene);
 		}
 	}
+	std::cout << "scene removed, " << m_pScenes.size() << " scenes left" << std::endl;
 }
 
 void SceneManager::NextScene()
@@ -145,7 +147,7 @@ void SceneManager::Update()
 		m_ActiveScene->RootUpdate();
 		return;
 	}
-
+	
 	ASSERT_IF(m_ActiveScene == nullptr, L"No Active Scene Set!")
 }
 

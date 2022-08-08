@@ -74,7 +74,7 @@ void Pedestal::Score(GameObject* pPlayerObject, PxTriggerAction triggerAction)
 	{
 		if (triggerAction == PxTriggerAction::ENTER)
 		{
-			auto pPlayer = dynamic_cast<Player*>(pPlayerObject);
+			const auto pPlayer = dynamic_cast<Player*>(pPlayerObject);
 			//-15 health
 			if (pPlayer->HasOrb() && pPlayer->GetParent() != GetParent())
 			{
@@ -82,8 +82,8 @@ void Pedestal::Score(GameObject* pPlayerObject, PxTriggerAction triggerAction)
 				m_Text = std::to_wstring(m_Health);
 
 				//reset ball and players
-				auto pPyreScene = dynamic_cast<PyreScene*>(GetScene());
-				pPyreScene->GoalReset();
+				const auto pPyreScene = dynamic_cast<PyreScene*>(GetScene());
+				pPyreScene->GoalReset(pPlayer);
 			}
 
 			//Disable person till next goal

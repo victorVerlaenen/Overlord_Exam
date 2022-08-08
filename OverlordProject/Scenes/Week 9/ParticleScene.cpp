@@ -7,19 +7,9 @@ void ParticleScene::Initialize()
 {
 	m_SceneContext.settings.drawGrid = false;
 	m_SceneContext.settings.enableOnGUI = true;
+
 	//Particle System
 	ParticleEmitterSettings settings{};
-	/*settings.velocity = { 0.f,6.f,0.f };
-	settings.minSize = 1.f;
-	settings.maxSize = 2.f;
-	settings.minEnergy = 1.f;
-	settings.maxEnergy = 2.f;
-	settings.minScale = 3.5f;
-	settings.maxScale = 5.5f;
-	settings.minEmitterRadius = .2f;
-	settings.maxEmitterRadius = .5f;
-	settings.color = { 1.f,1.f,1.f, .6f };*/
-
 	settings.velocity = { 0.f,6.f,0.f };
 	settings.minSize = 5.f;
 	settings.maxSize = 6.f;

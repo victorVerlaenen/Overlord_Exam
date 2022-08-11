@@ -1,4 +1,5 @@
 #pragma once
+class Aura;
 class Orb;
 
 struct PlayerDesc
@@ -36,8 +37,8 @@ struct PlayerDesc
 class Player : public GameObject
 {
 public:
-	Player(const PlayerDesc& characterDesc, float radius);
-	~Player() override = default;
+	Player(const PlayerDesc& characterDesc, float radius, float runningSpeed, float sprintingSpeed);
+	~Player() override;
 
 	Player(const Player& other) = delete;
 	Player(Player&& other) noexcept = delete;
@@ -47,14 +48,20 @@ public:
 	void DrawImGui();
 
 	void SetActive(bool value);
+	bool GetIsActive() { return m_IsActive; }
 	void SetHasOrb(bool value) { m_HasOrb = value; }
 	bool HasOrb() const { return m_HasOrb; }
+
+	void SetRespawned(bool value) { m_JustRespawned = value; }
+	bool GetRespawned() { return m_JustRespawned; }
 	
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
 
 private:
+	Aura* m_pAura{};
+
 	CameraComponent* m_pCameraComponent{};
 	ControllerComponent* m_pControllerComponent{};
 	GameObject* m_pCharacterObject{};
@@ -65,8 +72,8 @@ private:
 	float m_MoveAcceleration{},						//Acceleration required to reach maxMoveVelocity after 1 second (maxMoveVelocity / moveAccelerationTime)
 		m_FallAcceleration{},						//Acceleration required to reach maxFallVelocity after 1 second (maxFallVelocity / fallAccelerationTime)
 		m_MoveSpeed{};								//MoveSpeed > Horizontal Velocity = MoveDirection * MoveVelocity (= TotalVelocity.xz)
-	const float m_RunningSpeed{ 2.5f },
-		m_SprintingSpeed{6.f};
+	float m_RunningSpeed{  },
+		m_SprintingSpeed{};
 
 	XMFLOAT3 m_TotalVelocity{};						//TotalVelocity with X/Z for Horizontal Movement AND Y for Vertical Movement (fall/jump)
 	XMFLOAT3 m_CurrentDirection{};					//Current/Last Direction based on Camera forward/right (Stored for deacceleration)
@@ -87,4 +94,8 @@ private:
 	static FMOD::ChannelGroup* m_pSoundsGroup;
 	const float m_StepInterval{ 0.1f };
 	float m_StepCounter{ m_StepInterval };
+	bool m_JustRespawned{ false };
+	float m_RespawnInvFrames{ 1.5f };
+
+	bool m_AuraToggle{ false };
 };

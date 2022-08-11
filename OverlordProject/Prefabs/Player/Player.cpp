@@ -3,28 +3,39 @@
 
 #include "Materials/DiffuseMaterial/DiffuseMaterial.h"
 #include "Materials/DiffuseMaterial_Skinned/DiffuseMaterial_Skinned.h"
+#include "Prefabs/Aura/Aura.h"
 #include "Prefabs/CharacterHUD/CharacterHUD.h"
 #include "Prefabs/Orb/Orb.h"
 #include "Prefabs/Team/Team.h"
 
 FMOD::ChannelGroup* Player::m_pSoundsGroup{ nullptr };
 
-Player::Player(const PlayerDesc& characterDesc, float radius) :
+Player::Player(const PlayerDesc& characterDesc, float radius, float runningSpeed, float sprintingSpeed) :
 	m_PlayerDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
 	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime),
-	m_AuraRadius(radius)
+	m_AuraRadius(radius),
+	m_RunningSpeed(runningSpeed),
+	m_SprintingSpeed(sprintingSpeed)
 {
 
+}
+
+Player::~Player()
+{
+	if (m_AuraToggle)
+		delete m_pAura;
 }
 
 
 void Player::Initialize(const SceneContext& /*sceneContext*/)
 {
 	SetTag(L"Player");
-	//const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 	//Controller
 	m_pControllerComponent = AddComponent(new ControllerComponent(m_PlayerDesc.controller));
+	/*m_pControllerComponent->SetCollisionGroup(CollisionGroup::Group0);
+	m_pControllerComponent->SetCollisionIgnoreGroup(CollisionGroup::Group0);*/
+
 
 	//Sound
 	SoundManager::Get()->GetSystem()->createStream("Resources/Audio/Step.ogg", FMOD_DEFAULT, nullptr, &m_pStepSound);
@@ -38,7 +49,7 @@ void Player::Initialize(const SceneContext& /*sceneContext*/)
 
 	//Player
 	m_pCharacterObject = AddChild(new GameObject());
-	m_pCharacterObject->GetTransform()->Scale(0.02f);
+	m_pCharacterObject->GetTransform()->Scale(0.02f * m_AuraRadius);
 	const auto pModelComponent = m_pCharacterObject->AddComponent(new ModelComponent(L"Meshes/Mouse.ovm"));
 
 
@@ -54,13 +65,9 @@ void Player::Initialize(const SceneContext& /*sceneContext*/)
 	m_pAnimator->SetAnimation(L"Idle");
 	m_pAnimator->Play();
 
-	const auto pAura = AddChild(new GameObject());
-	pAura->GetTransform()->Translate(XMFLOAT3{ m_pControllerComponent->GetFootPosition().x, m_pControllerComponent->GetFootPosition().y + .2f,  m_pControllerComponent->GetFootPosition().z });
-	pAura->GetTransform()->Scale(m_AuraRadius);
-	const auto pModel = pAura->AddComponent(new ModelComponent(L"Meshes/UnitPlane.ovm"));
-	const auto pAuraMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial>();
-	pAuraMaterial->SetDiffuseTexture(static_cast<Team*>(GetParent())->GetAuraTexturePath());
-	pModel->SetMaterial(pAuraMaterial);
+
+	m_pAura = AddChild(new Aura(XMFLOAT3{ m_pControllerComponent->GetFootPosition().x, m_pControllerComponent->GetFootPosition().y + .2f,  m_pControllerComponent->GetFootPosition().z }, m_AuraRadius));
+	m_pAura->SetTag(L"Aura");
 
 	//Particle System
 	ParticleEmitterSettings settings{};
@@ -82,6 +89,32 @@ void Player::Initialize(const SceneContext& /*sceneContext*/)
 
 void Player::Update(const SceneContext& sceneContext)
 {
+
+
+	//disable aura if player has orb
+	if (m_HasOrb && m_AuraToggle == false)
+	{
+		RemoveChild(m_pAura);
+		m_AuraToggle = true;
+	}
+	else if (m_HasOrb == false && m_AuraToggle == true)
+	{
+		AddChild(m_pAura);
+		m_AuraToggle = false;
+	}
+
+	//respawn invinsible timer
+	if (m_JustRespawned == true)
+	{
+		m_RespawnInvFrames -= sceneContext.pGameTime->GetElapsed();
+		if (m_RespawnInvFrames <= 0)
+		{
+			m_RespawnInvFrames = 1.5f;
+			m_JustRespawned = false;
+		}
+	}
+
+	//running particles
 	m_pRunningParticle->GetTransform()->Translate(m_pControllerComponent->GetFootPosition());
 	if (m_pAnimator->GetClipName() == L"Passing")
 	{
@@ -92,12 +125,12 @@ void Player::Update(const SceneContext& sceneContext)
 			m_PassingTimer = 0;
 		}
 	}
+
 	if (m_IsActive)
 	{
 		//Passing behaviour
 		///////////////////////
 		//Check if this player has the orb
-
 		const auto pTeam = static_cast<Team*>(GetParent());
 		//If orb just got passed => do nothing
 		if (pTeam->GetJustPassed() == true)
@@ -109,9 +142,9 @@ void Player::Update(const SceneContext& sceneContext)
 		//Check for pass input
 		if (sceneContext.pInput->IsActionTriggered(m_PlayerDesc.actionId_PassNext))
 		{
-			sceneContext.pCamera->StartScreenShake(.2f, .15f);
 			if (HasOrb())
 			{
+				sceneContext.pCamera->StartScreenShake(.2f, .15f);
 				SoundManager::Get()->GetSystem()->playSound(m_pPassSound, m_pSoundsGroup, false, nullptr);
 				m_pAnimator->SetAnimation(L"Passing");
 				pTeam->PassToNextPlayer();
@@ -129,9 +162,9 @@ void Player::Update(const SceneContext& sceneContext)
 		//Idem above
 		if (sceneContext.pInput->IsActionTriggered(m_PlayerDesc.actionId_PassPrevious))
 		{
-			sceneContext.pCamera->StartScreenShake(.2f, .15f);
 			if (HasOrb())
 			{
+				sceneContext.pCamera->StartScreenShake(.2f, .15f);
 				SoundManager::Get()->GetSystem()->playSound(m_pPassSound, m_pSoundsGroup, false, nullptr);
 				m_pAnimator->SetAnimation(L"Passing");
 				pTeam->PassToPreviousPlayer();
@@ -320,6 +353,12 @@ void Player::Update(const SceneContext& sceneContext)
 
 		//The above is a simple implementation of Movement Dynamics, adjust the code to further improve the movement logic and behaviour.
 		//Also, it can be usefull to use a seperate RayCast to check if the character is grounded (more responsive)
+	}
+	else
+	{
+		//make sure run energy charges when not active
+		m_RunEnergy += 30 * sceneContext.pGameTime->GetElapsed();
+		m_RunEnergy = std::clamp(m_RunEnergy, 0.f, 100.f);
 	}
 }
 

@@ -6,6 +6,7 @@
 #include "Materials/Post/Vignette.h"
 #include "Materials/Shadow/ColorMaterial_Shadow.h"
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
+#include "Prefabs/Aura/Aura.h"
 #include "Prefabs/CharacterHUD/CharacterHUD.h"
 #include "Prefabs/Orb/Orb.h"
 #include "Prefabs/Pedestal/Pedestal.h"
@@ -25,6 +26,7 @@ void PyreScene::GoalReset(Player* pScoredPlayer) const
 	m_pTeam_02->ResetTeam(pScoredPlayer);
 
 	m_pOrb->GetTransform()->Translate(0, 4, 0);
+	m_pOrb->SetOrbPosition({ 0, 4, 0 });
 	m_pOrb->SetIsPickedUp(false);
 }
 
@@ -119,19 +121,24 @@ void PyreScene::AddTeams()
 	playerDesc.actionId_PassNext = Player01PassNext;
 	playerDesc.actionId_PassPrevious = Player01PassPrevious;
 
-	auto pCharacter = new Player(playerDesc,1);
+	std::vector<Player*> pTempPlayerList{};
+
+	auto pCharacter = new Player(playerDesc,1, 2.5f, 6.f);
+	pTempPlayerList.emplace_back(pCharacter);
 	m_pTeam_01->AddPlayer(pCharacter, m_StartingPositions[0], true);
 
-	pCharacter = new Player(playerDesc,1.2f);
+	pCharacter = new Player(playerDesc,1.2f, 2.0f, 5.f);
+	pTempPlayerList.emplace_back(pCharacter);
 	m_pTeam_01->AddPlayer(pCharacter, m_StartingPositions[1], false);
 
-	pCharacter = new Player(playerDesc,.6f);
+	pCharacter = new Player(playerDesc,.6f, 3.0f, 7.f);
+	pTempPlayerList.emplace_back(pCharacter);
 	m_pTeam_01->AddPlayer(pCharacter, m_StartingPositions[2], false);
 	// pedestal
 	m_pPedestal = new Pedestal(XMFLOAT2{ 100, m_SceneContext.windowHeight - 180 }, XMFLOAT4{ Colors::CadetBlue });
 	m_pTeam_01->SetPedestal(m_pPedestal, { -15.f, -.6f, 0.f });
 	// hud
-	auto pCharacterHUD = new CharacterHUD();
+	auto pCharacterHUD = new CharacterHUD(pTempPlayerList);
 	m_pTeam_01->SetHud(pCharacterHUD, { 200, m_SceneContext.windowHeight - 100, .8f });
 
 
@@ -142,19 +149,22 @@ void PyreScene::AddTeams()
 	playerDesc.actionId_PassNext = Player02PassNext;
 	playerDesc.actionId_PassPrevious = Player02PassPrevious;
 
-	pCharacter = new Player(playerDesc,1);
+	pCharacter = new Player(playerDesc,1, 2.5f, 6.f);
+	pTempPlayerList[0] = pCharacter;
 	m_pTeam_02->AddPlayer(pCharacter, XMFLOAT3(-m_StartingPositions[0].x, m_StartingPositions[0].y, -m_StartingPositions[0].z), true);
 
-	pCharacter = new Player(playerDesc,1.2f);
+	pCharacter = new Player(playerDesc,1.2f, 2.f, 5.f);
+	pTempPlayerList[1] = pCharacter;
 	m_pTeam_02->AddPlayer(pCharacter, XMFLOAT3(-m_StartingPositions[1].x, m_StartingPositions[1].y, -m_StartingPositions[1].z), false);
 
-	pCharacter = new Player(playerDesc, .6f);
+	pCharacter = new Player(playerDesc, .6f, 3.f, 7.f);
+	pTempPlayerList[2] = pCharacter;
 	m_pTeam_02->AddPlayer(pCharacter, XMFLOAT3(-m_StartingPositions[2].x, m_StartingPositions[2].y, -m_StartingPositions[2].z), false);
 	// pedestal
 	const auto pPedestalObject_02 = new Pedestal(XMFLOAT2{ m_SceneContext.windowWidth - 140, m_SceneContext.windowHeight - 180 }, XMFLOAT4{ Colors::IndianRed });
 	m_pTeam_02->SetPedestal(pPedestalObject_02, { 15.f, -.6f, 0.f });
 	// hud
-	pCharacterHUD = new CharacterHUD();
+	pCharacterHUD = new CharacterHUD(pTempPlayerList);
 	m_pTeam_02->SetHud(pCharacterHUD, { m_SceneContext.windowWidth - 200, m_SceneContext.windowHeight - 100, .8f });
 
 }

@@ -3,6 +3,8 @@
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
 #include "Prefabs/Player/Player.h"
+#include "Prefabs/Team/Team.h"
+#include "Scenes/Pyre/GameOverScene.h"
 #include "Scenes/Pyre/PyreScene.h"
 
 Pedestal::Pedestal(const XMFLOAT2& healthPosition, const XMFLOAT4& color)
@@ -80,6 +82,12 @@ void Pedestal::Score(GameObject* pPlayerObject, PxTriggerAction triggerAction)
 			{
 				m_Health -= 15;
 				m_Text = std::to_wstring(m_Health);
+				if(m_Health <= 0)
+				{
+					const auto pSceneManager = SceneManager::Get();
+					pSceneManager->AddGameScene(new GameOverScene(dynamic_cast<Team*>(GetParent())->GetTeamNumber() == 1 ? L"Red Team Won!" : L"Blue Team Won!"));
+					pSceneManager->SetActiveGameScene(L"GameOverScene");
+				}
 
 				//reset ball and players
 				const auto pPyreScene = dynamic_cast<PyreScene*>(GetScene());

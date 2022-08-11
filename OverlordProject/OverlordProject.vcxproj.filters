@@ -44,6 +44,8 @@
     <ClCompile Include="Prefabs\CharacterHUD\CharacterHUD.cpp" />
     <ClCompile Include="Prefabs\Team\Team.cpp" />
     <ClCompile Include="Materials\Post\Vignette.cpp" />
+    <ClCompile Include="Prefabs\Aura\Aura.cpp" />
+    <ClCompile Include="Scenes\Pyre\GameOverScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -88,5 +90,7 @@
     <ClInclude Include="Prefabs\CharacterHUD\CharacterHUD.h" />
     <ClInclude Include="Prefabs\Team\Team.h" />
     <ClInclude Include="Materials\Post\Vignette.h" />
+    <ClInclude Include="Prefabs\Aura\Aura.h" />
+    <ClInclude Include="Scenes\Pyre\GameOverScene.h" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "MainGame.h"
 
+
 /*LAB Content*/
 //#define W3
 //#define W4
@@ -86,6 +87,7 @@
 #ifdef PYRE
 #include "Scenes/Pyre/MenuScene.h"
 #include "Scenes/Pyre/PyreScene.h"
+#include "Scenes/Pyre/GameOverScene.h"
 #endif
 #pragma endregion
 
@@ -170,7 +172,7 @@ void MainGame::Initialize()
 #endif
 
 #ifdef PYRE
-	SceneManager::Get()->AddGameScene(new MenuScene());
+		SceneManager::Get()->AddGameScene(new MenuScene());
 #endif
 }
 

@@ -8,7 +8,7 @@ class Team : public GameObject
 {
 public:
 	Team(int teamNumber, Orb* pOrb,const std::wstring& teamTexturePath,const std::wstring& teamAuraTexturePath);
-	~Team() override = default;
+	~Team() override;
 
 	Team(const Team& other) = delete;
 	Team(Team&& other) noexcept = delete;
@@ -32,19 +32,31 @@ public:
 	int GetTeamNumber() const { return m_TeamNumber; }
 
 	void ResetTeam(Player* pScoredPlayer = nullptr);
+	void Kill(Player* pPlayerToDie);
 
-	const XMFLOAT3& GetActivePlayerPosition() const;
+	XMFLOAT3 GetActivePlayerPosition() const;
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
 	void Draw(const SceneContext&) override;
 
 private:
-	std::vector<Player*> m_pPlayers{};
-	Player* m_pBanishedPlayer{};
-	size_t m_ActivePlayer{};
+	void UpdateKilledPlayers(const SceneContext& sceneContext);
+	void SetToNextFreePosition(Player* pPlayer);
+	void FreeRespawnPosition(Player* pPlayer);
 
-	std::vector<XMFLOAT3> m_ResetPositions{};
+	std::vector<Player*> m_pPlayers{};
+	std::vector<std::pair<Player*, float>> m_pKilledPlayers{};
+	Player* m_pBanishedPlayer{nullptr};
+	Player* m_pNewBanishedPlayer{nullptr};
+	Player* m_pNewKilledPlayer{nullptr};
+	size_t m_ActivePlayer{0};
+	XMFLOAT3 m_ActivePlayerLocation{};
+
+	std::vector<std::pair<XMFLOAT3, Player*>> m_ResetPositions{};
+
+	FMOD::Sound* m_pDeadSound{};
+	FMOD::ChannelGroup* m_pSoundsGroup;
 
 	Pedestal* m_pPedestal{};
 	CharacterHUD* m_pCharacterHUD{};
@@ -53,7 +65,10 @@ private:
 	std::wstring m_TeamAuraTexturePath{};
 
 	bool m_JustPassed{ false };
+	bool m_PlayerHasToRejoin{ false };
 
 	int m_TeamNumber{};
+	float m_DeadTimer{};
 };
+
 

@@ -14,6 +14,7 @@ public:
 
 	void SetPlayer(Player* pPlayer) { m_pPlayerPickedUp = pPlayer; }
 	void SetIsPickedUp(bool value) { m_IsPickedUp = value; }
+	void SetOrbPosition(const XMFLOAT3& pos) { m_CurrentOrbPosition = pos; }
 
 protected:
 	void Initialize(const SceneContext&) override;

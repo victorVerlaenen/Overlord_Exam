@@ -10,7 +10,7 @@ Skybox::Skybox()
 
 void Skybox::Initialize(const SceneContext&)
 {
-	float scale{ 50};
+	float scale{ 40};
 
 	const auto pMat0 = MaterialManager::Get()->CreateMaterial<SkyboxMaterial>();
 	pMat0->SetSkyboxTexture(L"Textures/Skybox.dds");

@@ -40,7 +40,7 @@ void Orb::Update(const SceneContext& sceneContext)
 			m_pPlayerPickedUp->GetTransform()->GetPosition().z };
 
 		XMStoreFloat3(&m_CurrentOrbPosition, XMVectorLerp(XMLoadFloat3(&m_CurrentOrbPosition), XMLoadFloat3(&targetPosition), sceneContext.pGameTime->GetElapsed() * 8.f));
-		
+
 		GetTransform()->Translate(m_CurrentOrbPosition);
 	}
 }
@@ -52,8 +52,11 @@ void Orb::PickUpBall(GameObject* pPlayerObject, PxTriggerAction triggerAction)
 		if (triggerAction == PxTriggerAction::ENTER)
 		{
 			m_pPlayerPickedUp = dynamic_cast<Player*>(pPlayerObject);
-			m_pPlayerPickedUp->SetHasOrb(true);
-			m_IsPickedUp = true;
+			if (m_pPlayerPickedUp->GetRespawned() == false)
+			{
+				m_pPlayerPickedUp->SetHasOrb(true);
+				m_IsPickedUp = true;
+			}
 		}
 	}
 }
